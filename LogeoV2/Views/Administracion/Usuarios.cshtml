@@ -1,0 +1,93 @@
+﻿@model LogeoV2.ViewModels.UsuariosListVM
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+}
+
+<h1>Gestión de Usuarios</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-info">@TempData["Mensaje"]</div>
+}
+
+<form method="get" asp-action="Usuarios" class="mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
+            <input type="text" name="busqueda" value="@Model.Busqueda"
+                   class="form-control border-0 ps-4" placeholder="Buscar usuario"
+                   style="box-shadow: none;" />
+            <button type="submit" class="btn btn-light border-0 px-3">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+
+        <button class="btn btn-link text-decoration-none ms-auto d-flex align-items-center gap-1"
+                type="button" data-bs-toggle="collapse" data-bs-target="#panelFiltros"
+                aria-expanded="false" aria-controls="panelFiltros">
+            Filtros <i class="bi bi-sliders"></i>
+        </button>
+    </div>
+
+    <div class="collapse @(Model.OrdenarPor != null ? "show" : "")" id="panelFiltros">
+        <div class="card card-body mt-2" style="max-width: 400px; margin-left: auto;">
+            <div class="mb-2">
+                <label class="form-label mb-1">Ordenar por</label>
+                <select name="ordenarPor" class="form-select">
+                    <option value="id" selected="@(Model.OrdenarPor == "id")">ID</option>
+                    <option value="nombre" selected="@(Model.OrdenarPor == "nombre")">Nombre</option>
+                    <option value="rol" selected="@(Model.OrdenarPor == "rol")">Rol</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label mb-1">Orden</label>
+                <select name="ascendente" class="form-select">
+                    <option value="true" selected="@(Model.Ascendente)">Ascendente</option>
+                    <option value="false" selected="@(!Model.Ascendente)">Descendente</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Aplicar filtros</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Correo</th>
+            <th>Último Acceso</th>
+            <th>Rol</th>
+            <th>Gestionar Rol</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var usuario in Model.Usuarios)
+        {
+            <tr>
+                <td>@usuario.IDUsuario</td>
+                <td>@usuario.Nombre</td>
+                <td>@usuario.Apellido</td>
+                <td>@usuario.Correo</td>
+                <td>@(usuario.UltimoAcceso?.ToString("g") ?? "Nunca")</td>
+                <td>@usuario.Rol.NombreRol</td>
+                <td>
+                    <form method="post" asp-action="CambiarRolUsuario" class="d-flex gap-2">
+                        <input type="hidden" name="idUsuario" value="@usuario.IDUsuario" />
+                        <input type="hidden" name="busqueda" value="@Model.Busqueda" />
+                        <input type="hidden" name="ordenarPor" value="@Model.OrdenarPor" />
+                        <input type="hidden" name="ascendente" value="@Model.Ascendente" />
+                        <select name="idRol" class="form-select form-select-sm">
+                            @foreach (var rol in Model.RolesDisponibles)
+                            {
+                                <option value="@rol.IdRol" selected="@(rol.IdRol == usuario.IdRol)">@rol.NombreRol</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
