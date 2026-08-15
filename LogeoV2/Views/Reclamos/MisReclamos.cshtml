@@ -1,0 +1,52 @@
+﻿@model List<LogeoV2.Models.Reclamo>
+@{
+    ViewData["Title"] = "Mis Reclamos";
+}
+
+<h1>Mis Reclamos</h1>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Todavía no creaste ningún reclamo.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Categoría</th>
+                <th>Subcategoría</th>
+                <th>Barrio</th>
+                <th>Dirección</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                var claseEstado = r.Estado switch
+                {
+                    "Aceptado" => "text-success",
+                    "Rechazado" => "text-danger",
+                    "En Proceso" => "text-warning",
+                    "Resuelto" => "text-primary",
+                    _ => "text-secondary"
+                };
+
+                <tr>
+                    <td>@r.IdReclamo</td>
+                    <td>@r.Categoria?.Nombre</td>
+                    <td>@r.Subcategoria?.Nombre</td>
+                    <td>@r.Barrio?.Nombre</td>
+                    <td>@r.Direccion</td>
+                    <td>@r.Descripcion</td>
+                    <td>@r.FechaCreacion.ToString("g")</td>
+                    <td class="@claseEstado fw-bold">@r.Estado</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -26,15 +26,27 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                         @if (User.IsInRole("Administrador"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Administracion" asp-action="Usuarios">Usuarios</a>
                             </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Gestionar">Gestionar Reclamos</a>
+                            </li>
                         }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" id="btnNuevoReclamo" data-bs-toggle="modal" data-bs-target="#modalReclamo">
+                                Nuevo Reclamo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="MisReclamos">Mis Reclamos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial de Reclamos</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -45,15 +57,84 @@
             @RenderBody()
         </main>
     </div>
-
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - LogeoV2 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+    <div class="modal fade" id="modalReclamo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="contenidoModalReclamo">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        const modalReclamo = document.getElementById('modalReclamo');
+
+        modalReclamo.addEventListener('show.bs.modal', function () {
+            fetch('/Reclamos/NuevoModal')
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('contenidoModalReclamo').innerHTML = html;
+                    inicializarFormReclamo();
+                });
+        });
+
+        function inicializarFormReclamo() {
+            const selectCategoria = document.getElementById('selectCategoria');
+            const selectSubcategoria = document.getElementById('selectSubcategoria');
+            const form = document.getElementById('formNuevoReclamo');
+
+            selectCategoria.addEventListener('change', function () {
+                const idCategoria = this.value;
+                selectSubcategoria.innerHTML = '<option value="">Cargando...</option>';
+
+                if (!idCategoria) {
+                    selectSubcategoria.innerHTML = '<option value="">Seleccioná primero una categoría</option>';
+                    return;
+                }
+
+                fetch(`/Reclamos/GetSubcategorias?idCategoria=${idCategoria}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        selectSubcategoria.innerHTML = '<option value="">Seleccioná una subcategoría</option>';
+                        data.forEach(s => {
+                            const option = document.createElement('option');
+                            option.value = s.id;
+                            option.textContent = s.nombre;
+                            selectSubcategoria.appendChild(option);
+                        });
+                    });
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+
+                fetch('/Reclamos/Crear', { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            bootstrap.Modal.getInstance(modalReclamo).hide();
+                            alert(data.mensaje);
+                        } else {
+                            document.getElementById('contenidoModalReclamo').innerHTML = data;
+                            inicializarFormReclamo();
+                        }
+                    });
+            });
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

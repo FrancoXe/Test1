@@ -10,7 +10,7 @@
     <div class="alert alert-info">@TempData["Mensaje"]</div>
 }
 
-<form method="get" asp-action="Usuarios" class="mb-4">
+<form method="get" asp-action="Usuarios" class="mb-2">
     <div class="d-flex align-items-center gap-2">
         <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
             <input type="text" name="busqueda" value="@Model.Busqueda"
@@ -21,34 +21,65 @@
             </button>
         </div>
 
-        <button class="btn btn-link text-decoration-none ms-auto d-flex align-items-center gap-1"
-                type="button" data-bs-toggle="collapse" data-bs-target="#panelFiltros"
-                aria-expanded="false" aria-controls="panelFiltros">
-            Filtros <i class="bi bi-sliders"></i>
-        </button>
-    </div>
-
-    <div class="collapse @(Model.OrdenarPor != null ? "show" : "")" id="panelFiltros">
-        <div class="card card-body mt-2" style="max-width: 400px; margin-left: auto;">
-            <div class="mb-2">
-                <label class="form-label mb-1">Ordenar por</label>
-                <select name="ordenarPor" class="form-select">
-                    <option value="id" selected="@(Model.OrdenarPor == "id")">ID</option>
-                    <option value="nombre" selected="@(Model.OrdenarPor == "nombre")">Nombre</option>
-                    <option value="rol" selected="@(Model.OrdenarPor == "rol")">Rol</option>
-                </select>
+        <div class="dropdown ms-auto">
+            <button class="btn btn-link text-decoration-none d-flex align-items-center gap-1"
+                    type="button" id="dropdownFiltros" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                Filtros <i class="bi bi-sliders"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltros">
+                <div class="mb-2">
+                    <label class="form-label mb-1">Ordenar por</label>
+                    <select name="ordenarPor" class="form-select">
+                        <option value="id" selected="@(Model.OrdenarPor == "id")">ID</option>
+                        <option value="nombre" selected="@(Model.OrdenarPor == "nombre")">Nombre</option>
+                        <option value="rol" selected="@(Model.OrdenarPor == "rol")">Rol</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label mb-1">Orden</label>
+                    <select name="ascendente" class="form-select">
+                        <option value="true" selected="@(Model.Ascendente)">Ascendente</option>
+                        <option value="false" selected="@(!Model.Ascendente)">Descendente</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
             </div>
-            <div class="mb-2">
-                <label class="form-label mb-1">Orden</label>
-                <select name="ascendente" class="form-select">
-                    <option value="true" selected="@(Model.Ascendente)">Ascendente</option>
-                    <option value="false" selected="@(!Model.Ascendente)">Descendente</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm">Aplicar filtros</button>
         </div>
     </div>
 </form>
+
+<div class="d-flex justify-content-end mb-4">
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                id="dropdownExportar" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download"></i> Exportar
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportar">
+            <li>
+                <a class="dropdown-item" asp-action="ExportarUsuarios"
+                   asp-route-formato="excel" asp-route-busqueda="@Model.Busqueda"
+                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                    Excel (.xlsx)
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="ExportarUsuarios"
+                   asp-route-formato="pdf" asp-route-busqueda="@Model.Busqueda"
+                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                    PDF
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="ExportarUsuarios"
+                   asp-route-formato="csv" asp-route-busqueda="@Model.Busqueda"
+                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                    CSV
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
 
 <table class="table table-striped">
     <thead>

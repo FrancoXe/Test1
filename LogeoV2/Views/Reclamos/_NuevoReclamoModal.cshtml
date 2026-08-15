@@ -1,0 +1,71 @@
+﻿@model LogeoV2.ViewModels.ReclamoVM
+
+<form id="formNuevoReclamo" asp-controller="Reclamos" asp-action="Crear" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <h5 class="modal-title">Nuevo Reclamo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label class="form-label">DNI</label>
+            <input asp-for="DNI" class="form-control" />
+            <span asp-validation-for="DNI" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <select asp-for="IdCategoria" id="selectCategoria" class="form-select">
+                <option value="">Seleccioná una categoría</option>
+                @foreach (var c in Model.Categorias)
+                {
+                    <option value="@c.IdCategoria">@c.Nombre</option>
+                }
+            </select>
+            <span asp-validation-for="IdCategoria" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Subcategoría</label>
+            <select asp-for="IdSubcategoria" id="selectSubcategoria" class="form-select">
+                <option value="">Seleccioná primero una categoría</option>
+            </select>
+            <span asp-validation-for="IdSubcategoria" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Barrio</label>
+            <select asp-for="IdBarrio" class="form-select">
+                <option value="">Seleccioná un barrio</option>
+                @foreach (var b in Model.Barrios)
+                {
+                    <option value="@b.IdBarrio">@b.Nombre</option>
+                }
+            </select>
+            <span asp-validation-for="IdBarrio" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <input asp-for="Direccion" class="form-control" />
+            <span asp-validation-for="Direccion" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Archivo adjunto (opcional, máx. 5MB)</label>
+            <input asp-for="Archivo" type="file" class="form-control" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Enviar reclamo</button>
+    </div>
+</form>

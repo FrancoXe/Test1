@@ -1,0 +1,72 @@
+﻿@model LogeoV2.ViewModels.GestionReclamosVM
+@{
+    ViewData["Title"] = "Gestionar Reclamos";
+}
+
+<h1>Gestionar Reclamos</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-info">@TempData["Mensaje"]</div>
+}
+
+<form method="get" asp-action="Gestionar" class="mb-4 d-flex gap-2 align-items-end">
+    <div>
+        <label class="form-label mb-1">Filtrar por estado</label>
+        <select name="estado" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            @foreach (var e in Model.EstadosDisponibles)
+            {
+                <option value="@e" selected="@(Model.Estado == e)">@e</option>
+            }
+        </select>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Vecino</th>
+            <th>Categoría</th>
+            <th>Subcategoría</th>
+            <th>Barrio</th>
+            <th>Dirección</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Departamento Asignado</th>
+            <th>Cambiar Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Reclamos)
+        {
+            <tr>
+                <td>@r.IdReclamo</td>
+                <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                <td>@r.Categoria?.Nombre</td>
+                <td>@r.Subcategoria?.Nombre</td>
+                <td>@r.Barrio?.Nombre</td>
+                <td>@r.Direccion</td>
+                <td>@r.Descripcion</td>
+                <td>@r.FechaCreacion.ToString("g")</td>
+                <td>@r.Estado</td>
+                <td>@(r.DepartamentoAsignado?.Nombre ?? "—")</td>
+                <td>
+                    <form method="post" asp-action="CambiarEstado" class="d-flex gap-2">
+                        <input type="hidden" name="idReclamo" value="@r.IdReclamo" />
+                        <input type="hidden" name="estado" value="@Model.Estado" />
+                        <select name="nuevoEstado" class="form-select form-select-sm">
+                            @foreach (var e in Model.EstadosDisponibles)
+                            {
+                                <option value="@e" selected="@(e == r.Estado)">@e</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

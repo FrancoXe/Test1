@@ -33,6 +33,12 @@ builder.Services.AddScoped<IPermisoService, PermisoService>();
 //registrar servicio de usuarios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
+// export service 
+builder.Services.AddScoped<IExportService, ExportService>();
+
+// registrar servicio de reclamos
+builder.Services.AddScoped<IReclamoService, ReclamoService>();
+
 // Agregar servicios de autenticación por cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

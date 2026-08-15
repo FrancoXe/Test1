@@ -12,15 +12,18 @@ namespace LogeoV2.Controllers
         private readonly IRolService _rolService;
         private readonly IPermisoService _permisoService;
         private readonly IUsuarioService _usuarioService;
+        private readonly IExportService _exportService;
 
         public AdministracionController(
             IRolService rolService,
             IPermisoService permisoService,
-            IUsuarioService usuarioService)
+            IUsuarioService usuarioService,
+            IExportService exportService)
         {
             _rolService = rolService;
             _permisoService = permisoService;
             _usuarioService = usuarioService;
+            _exportService = exportService;
         }
 
         [HttpGet]
@@ -43,7 +46,6 @@ namespace LogeoV2.Controllers
                 Rol = rol,
                 Permisos = permisos.ToList()
             };
-
             return View(viewModel);
         }
 
@@ -56,7 +58,6 @@ namespace LogeoV2.Controllers
 
             var todosPermisos = await _permisoService.ObtenerTodosLosPermisos();
             var permisosRol = await _permisoService.ObtenerPermisosPorRol(rol.NombreRol);
-
             var viewModel = new AsignarPermisosVM
             {
                 IdRol = idRol,
@@ -64,7 +65,6 @@ namespace LogeoV2.Controllers
                 TodosPermisos = todosPermisos.ToList(),
                 PermisosSeleccionados = permisosRol.Select(p => p.Nombre).ToList()
             };
-
             return View(viewModel);
         }
 
@@ -85,14 +85,14 @@ namespace LogeoV2.Controllers
 
             return View(viewModel);
         }
-
         [HttpPost]
         public async Task<IActionResult> AsignarPermisos(AsignarPermisosVM model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.NombreRol))
                 return View(model);
 
-            await _permisoService.AsignarPermisosARol(model.NombreRol, model.PermisosSeleccionados.ToArray());
+            var permisosSeleccionados = model.PermisosSeleccionados ?? new List<string>();
+            await _permisoService.AsignarPermisosARol(model.NombreRol, permisosSeleccionados.ToArray());
 
             TempData["Mensaje"] = "Permisos actualizados exitosamente.";
             return RedirectToAction(nameof(DetallesRol), new { idRol = model.IdRol });
@@ -107,6 +107,36 @@ namespace LogeoV2.Controllers
                 : "No se pudo actualizar el rol.";
 
             return RedirectToAction(nameof(Usuarios), new { busqueda, ordenarPor, ascendente });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportarUsuarios(string formato, string? busqueda, string? ordenarPor, bool ascendente = true)
+        {
+            var usuarios = await _usuarioService.ObtenerUsuarios(busqueda, ordenarPor, ascendente);
+
+            var encabezados = new List<string> { "ID", "Nombre", "Apellido", "Correo", "Último Acceso", "Rol" };
+            var filas = usuarios.Select(u => new List<string>
+            {
+                u.IDUsuario.ToString(),
+                u.Nombre,
+                u.Apellido,
+                u.Correo,
+                u.UltimoAcceso?.ToString("g") ?? "Nunca",
+                u.Rol.NombreRol
+            }).ToList();
+
+            var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
+
+            return formato switch
+            {
+                "excel" => File(_exportService.ExportarExcel("Usuarios", encabezados, filas),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Usuarios_{fecha}.xlsx"),
+                "pdf" => File(_exportService.ExportarPdf("Usuarios", encabezados, filas),
+                    "application/pdf", $"Usuarios_{fecha}.pdf"),
+                "csv" => File(_exportService.ExportarCsv(encabezados, filas),
+                    "text/csv", $"Usuarios_{fecha}.csv"),
+                _ => BadRequest("Formato no soportado")
+            };
         }
     }
 }

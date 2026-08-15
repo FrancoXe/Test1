@@ -20,6 +20,11 @@ namespace LogeoV2.Data
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Permiso> Permisos { get; set; }
         public DbSet<RolPermiso> RolPermisos { get; set; }
+        public DbSet<Categoria> Categorias { get; set; }
+        public DbSet<Subcategoria> Subcategorias { get; set; }
+        public DbSet<Barrio> Barrios { get; set; }
+        public DbSet<Departamento> Departamentos { get; set; }
+        public DbSet<Reclamo> Reclamos { get; set; }
 
         public override int SaveChanges()
         {
@@ -202,6 +207,61 @@ namespace LogeoV2.Data
                 tb.Property(x => x.FechaAsignacion)
                     .HasColumnName("FechaAsignacion")
                     .IsRequired();
+
+                modelBuilder.Entity<Categoria>(tb =>
+                {
+                    tb.ToTable("Categorias");
+                    tb.HasKey(x => x.IdCategoria);
+                    tb.Property(x => x.IdCategoria).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.Nombre).HasMaxLength(50).IsRequired();
+                    tb.HasOne(c => c.Departamento)
+                        .WithMany()
+                        .HasForeignKey(c => c.IdDepartamento)
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+                modelBuilder.Entity<Subcategoria>(tb =>
+                {
+                    tb.ToTable("Subcategorias");
+                    tb.HasKey(x => x.IdSubcategoria);
+                    tb.Property(x => x.IdSubcategoria).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.Nombre).HasMaxLength(50).IsRequired();
+                    tb.HasOne(s => s.Categoria).WithMany().HasForeignKey(s => s.IdCategoria).OnDelete(DeleteBehavior.Restrict);
+                });
+
+                modelBuilder.Entity<Barrio>(tb =>
+                {
+                    tb.ToTable("Barrios");
+                    tb.HasKey(x => x.IdBarrio);
+                    tb.Property(x => x.IdBarrio).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.Nombre).HasMaxLength(50).IsRequired();
+                });
+
+                modelBuilder.Entity<Departamento>(tb =>
+                {
+                    tb.ToTable("Departamentos");
+                    tb.HasKey(x => x.IdDepartamento);
+                    tb.Property(x => x.IdDepartamento).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.Nombre).HasMaxLength(50).IsRequired();
+                });
+
+                modelBuilder.Entity<Reclamo>(tb =>
+                {
+                    tb.ToTable("Reclamos");
+                    tb.HasKey(x => x.IdReclamo);
+                    tb.Property(x => x.IdReclamo).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.DNI).HasMaxLength(20).IsRequired();
+                    tb.Property(x => x.Direccion).HasMaxLength(200).IsRequired();
+                    tb.Property(x => x.Descripcion).HasMaxLength(500).IsRequired();
+                    tb.Property(x => x.RutaArchivo).HasMaxLength(200);
+                    tb.Property(x => x.Estado).HasMaxLength(20).IsRequired();
+
+                    tb.HasOne(r => r.Categoria).WithMany().HasForeignKey(r => r.IdCategoria).OnDelete(DeleteBehavior.Restrict);
+                    tb.HasOne(r => r.Subcategoria).WithMany().HasForeignKey(r => r.IdSubcategoria).OnDelete(DeleteBehavior.Restrict);
+                    tb.HasOne(r => r.Barrio).WithMany().HasForeignKey(r => r.IdBarrio).OnDelete(DeleteBehavior.Restrict);
+                    tb.HasOne(r => r.Usuario).WithMany().HasForeignKey(r => r.IdUsuario).OnDelete(DeleteBehavior.Restrict);
+                    tb.HasOne(r => r.DepartamentoAsignado).WithMany().HasForeignKey(r => r.IdDepartamentoAsignado).OnDelete(DeleteBehavior.Restrict);
+                });
             });
         }
     }
