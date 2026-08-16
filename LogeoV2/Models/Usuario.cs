@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LogeoV2.Models
 {
@@ -38,5 +39,10 @@ namespace LogeoV2.Models
         public Rol Rol { get; set; }
 
         public DateTime? UltimoAcceso { get; set; }
+
+        public int? IdDepartamento { get; set; }
+
+        [ForeignKey("IdDepartamento")]
+        public Departamento? Departamento { get; set; }
     }
 }

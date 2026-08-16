@@ -1,0 +1,98 @@
+﻿@model LogeoV2.ViewModels.GestionReclamosVM
+@{
+    ViewData["Title"] = "Reclamos de mi Departamento";
+}
+
+<h1>Reclamos de mi Departamento</h1>
+
+<form method="get" asp-action="MisReclamosDepartamento" class="mb-4 d-flex gap-2 align-items-end">
+    <div>
+        <label class="form-label mb-1">Filtrar por estado</label>
+        <select name="estado" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            @foreach (var e in Model.EstadosDisponibles)
+            {
+                <option value="@e" selected="@(Model.Estado == e)">@e</option>
+            }
+        </select>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Vecino</th>
+            <th>Categoría</th>
+            <th>Subcategoría</th>
+            <th>Barrio</th>
+            <th>Dirección</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Reclamos)
+        {
+            <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
+                <td>@r.IdReclamo</td>
+                <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                <td>@r.Categoria?.Nombre</td>
+                <td>@r.Subcategoria?.Nombre</td>
+                <td>@r.Barrio?.Nombre</td>
+                <td>@r.Direccion</td>
+                <td>@r.Descripcion</td>
+                <td>@r.FechaCreacion.ToString("g")</td>
+                <td>
+                    <select class="form-select form-select-sm select-estado">
+                        @foreach (var e in Model.EstadosDisponibles)
+                        {
+                            <option value="@e" selected="@(e == r.Estado)">@e</option>
+                        }
+                    </select>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnGuardarCambios').addEventListener('click', async function () {
+            const filas = document.querySelectorAll('tr[data-id-reclamo]');
+            const cambios = [];
+
+            filas.forEach(fila => {
+                const idReclamo = fila.getAttribute('data-id-reclamo');
+                const estadoOriginal = fila.getAttribute('data-estado-original');
+                const nuevoEstado = fila.querySelector('.select-estado').value;
+
+                if (nuevoEstado !== estadoOriginal) {
+                    cambios.push({ idReclamo, nuevoEstado });
+                }
+            });
+
+            if (cambios.length === 0) {
+                alert('No hay cambios para guardar.');
+                return;
+            }
+
+            for (const cambio of cambios) {
+                const formData = new URLSearchParams();
+                formData.append('idReclamo', cambio.idReclamo);
+                formData.append('nuevoEstado', cambio.nuevoEstado);
+
+                await fetch('@Url.Action("CambiarEstadoDepartamento", "Reclamos")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+            }
+
+            location.reload();
+        });
+    </script>
+}

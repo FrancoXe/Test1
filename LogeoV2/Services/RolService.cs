@@ -16,7 +16,8 @@ namespace LogeoV2.Services
             "Vecino",     // Rol básico de usuario
             "Administrador", // Rol con permisos administrativos
             "Moderador",  // Rol con permisos intermedios
-            "Invitado"    // Rol con permisos limitados
+            "Invitado",    // Rol con permisos limitados
+            "Departamento"
         };
 
         public RolService(

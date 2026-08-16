@@ -90,35 +90,103 @@
             <th>Correo</th>
             <th>Último Acceso</th>
             <th>Rol</th>
-            <th>Gestionar Rol</th>
+            <th>Departamento</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var usuario in Model.Usuarios)
         {
-            <tr>
+            <tr data-id-usuario="@usuario.IDUsuario"
+                data-rol-original="@usuario.IdRol"
+                data-departamento-original="@(usuario.IdDepartamento?.ToString() ?? "")">
                 <td>@usuario.IDUsuario</td>
                 <td>@usuario.Nombre</td>
                 <td>@usuario.Apellido</td>
                 <td>@usuario.Correo</td>
                 <td>@(usuario.UltimoAcceso?.ToString("g") ?? "Nunca")</td>
-                <td>@usuario.Rol.NombreRol</td>
                 <td>
-                    <form method="post" asp-action="CambiarRolUsuario" class="d-flex gap-2">
-                        <input type="hidden" name="idUsuario" value="@usuario.IDUsuario" />
-                        <input type="hidden" name="busqueda" value="@Model.Busqueda" />
-                        <input type="hidden" name="ordenarPor" value="@Model.OrdenarPor" />
-                        <input type="hidden" name="ascendente" value="@Model.Ascendente" />
-                        <select name="idRol" class="form-select form-select-sm">
-                            @foreach (var rol in Model.RolesDisponibles)
-                            {
-                                <option value="@rol.IdRol" selected="@(rol.IdRol == usuario.IdRol)">@rol.NombreRol</option>
-                            }
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
-                    </form>
+                    <select class="form-select form-select-sm select-rol">
+                        @foreach (var rol in Model.RolesDisponibles)
+                        {
+                            <option value="@rol.IdRol" selected="@(rol.IdRol == usuario.IdRol)">@rol.NombreRol</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm select-departamento">
+                        <option value="">Sin asignar</option>
+                        @foreach (var d in Model.DepartamentosDisponibles)
+                        {
+                            <option value="@d.IdDepartamento" selected="@(d.IdDepartamento == usuario.IdDepartamento)">@d.Nombre</option>
+                        }
+                    </select>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<button type="button" id="btnGuardarCambiosUsuarios" class="btn btn-primary">Guardar cambios</button>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnGuardarCambiosUsuarios').addEventListener('click', async function () {
+            const filas = document.querySelectorAll('tr[data-id-usuario]');
+            const cambiosRol = [];
+            const cambiosDepartamento = [];
+
+            filas.forEach(fila => {
+                const idUsuario = fila.getAttribute('data-id-usuario');
+                const rolOriginal = fila.getAttribute('data-rol-original');
+                const deptoOriginal = fila.getAttribute('data-departamento-original');
+
+                const nuevoRol = fila.querySelector('.select-rol').value;
+                const nuevoDepto = fila.querySelector('.select-departamento').value;
+
+                if (nuevoRol !== rolOriginal) {
+                    cambiosRol.push({ idUsuario, idRol: nuevoRol });
+                }
+                if (nuevoDepto !== deptoOriginal) {
+                    cambiosDepartamento.push({ idUsuario, idDepartamento: nuevoDepto });
+                }
+            });
+
+            if (cambiosRol.length === 0 && cambiosDepartamento.length === 0) {
+                alert('No hay cambios para guardar.');
+                return;
+            }
+
+            const boton = document.getElementById('btnGuardarCambiosUsuarios');
+            boton.disabled = true;
+            boton.textContent = 'Guardando...';
+
+            for (const cambio of cambiosRol) {
+                const formData = new URLSearchParams();
+                formData.append('idUsuario', cambio.idUsuario);
+                formData.append('idRol', cambio.idRol);
+
+                await fetch('@Url.Action("CambiarRolUsuarioAjax", "Administracion")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+            }
+
+            for (const cambio of cambiosDepartamento) {
+                const formData = new URLSearchParams();
+                formData.append('idUsuario', cambio.idUsuario);
+                if (cambio.idDepartamento) {
+                    formData.append('idDepartamento', cambio.idDepartamento);
+                }
+
+                await fetch('@Url.Action("AsignarDepartamentoAjax", "Administracion")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+            }
+
+            location.reload();
+        });
+    </script>
+}

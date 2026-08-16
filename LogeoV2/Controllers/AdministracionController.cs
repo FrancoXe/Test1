@@ -73,11 +73,13 @@ namespace LogeoV2.Controllers
         {
             var usuarios = await _usuarioService.ObtenerUsuarios(busqueda, ordenarPor, ascendente);
             var roles = await _rolService.ObtenerTodosLosRoles();
+            var departamentos = await _usuarioService.ObtenerDepartamentos();
 
             var viewModel = new UsuariosListVM
             {
                 Usuarios = usuarios.ToList(),
                 RolesDisponibles = roles.ToList(),
+                DepartamentosDisponibles = departamentos,
                 Busqueda = busqueda,
                 OrdenarPor = ordenarPor,
                 Ascendente = ascendente
@@ -85,6 +87,7 @@ namespace LogeoV2.Controllers
 
             return View(viewModel);
         }
+
         [HttpPost]
         public async Task<IActionResult> AsignarPermisos(AsignarPermisosVM model)
         {
@@ -106,6 +109,14 @@ namespace LogeoV2.Controllers
                 ? "Rol actualizado exitosamente."
                 : "No se pudo actualizar el rol.";
 
+            return RedirectToAction(nameof(Usuarios), new { busqueda, ordenarPor, ascendente });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AsignarDepartamento(int idUsuario, int? idDepartamento, string? busqueda, string? ordenarPor, bool ascendente = true)
+        {
+            var exito = await _usuarioService.AsignarDepartamentoUsuario(idUsuario, idDepartamento);
+            TempData["Mensaje"] = exito ? "Departamento actualizado." : "No se pudo actualizar.";
             return RedirectToAction(nameof(Usuarios), new { busqueda, ordenarPor, ascendente });
         }
 
@@ -137,6 +148,19 @@ namespace LogeoV2.Controllers
                     "text/csv", $"Usuarios_{fecha}.csv"),
                 _ => BadRequest("Formato no soportado")
             };
+        }
+        [HttpPost]
+        public async Task<IActionResult> CambiarRolUsuarioAjax(int idUsuario, int idRol)
+        {
+            var exito = await _usuarioService.CambiarRolUsuario(idUsuario, idRol);
+            return Json(new { success = exito });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AsignarDepartamentoAjax(int idUsuario, int? idDepartamento)
+        {
+            var exito = await _usuarioService.AsignarDepartamentoUsuario(idUsuario, idDepartamento);
+            return Json(new { success = exito });
         }
     }
 }

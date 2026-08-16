@@ -156,6 +156,11 @@ namespace LogeoV2.Data
                   .WithMany()
                   .HasForeignKey(u => u.IdRol)
                   .OnDelete(DeleteBehavior.Restrict);
+
+                tb.HasOne(u => u.Departamento)
+                  .WithMany()
+                  .HasForeignKey(u => u.IdDepartamento)
+                  .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Permiso>(tb =>

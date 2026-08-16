@@ -109,15 +109,6 @@ namespace LogeoV2.Controllers
 
         [Authorize(Roles = "Administrador")]
         [HttpPost]
-        public async Task<IActionResult> CambiarEstado(int idReclamo, string nuevoEstado, string? estado, bool notificar = true)
-        {
-            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar);
-            TempData["Mensaje"] = exito ? "Estado actualizado exitosamente." : "No se pudo actualizar el estado.";
-            return RedirectToAction(nameof(Gestionar), new { estado });
-        }
-
-        [Authorize(Roles = "Administrador")]
-        [HttpPost]
         public async Task<IActionResult> CambiarEstadoAjax(int idReclamo, string nuevoEstado, bool notificar = true)
         {
             var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar);
@@ -180,6 +171,7 @@ namespace LogeoV2.Controllers
                 _ => BadRequest("Formato no soportado")
             };
         }
+
         [HttpGet]
         public async Task<IActionResult> VerDetallePdf(int id)
         {
@@ -203,6 +195,56 @@ namespace LogeoV2.Controllers
 
             var pdf = _exportService.ExportarReclamoDetalle(reclamo);
             return File(pdf, "application/pdf");
+        }
+
+        [Authorize(Roles = "Departamento")]
+        [HttpGet]
+        public async Task<IActionResult> MisReclamosDepartamento(string? estado)
+        {
+            var correo = User.FindFirst("Correo")?.Value;
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+            if (usuario?.IdDepartamento == null)
+                return View(new GestionReclamosVM { Reclamos = new List<Reclamo>() });
+
+            var query = _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Where(r => r.IdDepartamentoAsignado == usuario.IdDepartamento)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estado))
+                query = query.Where(r => r.Estado == estado);
+
+            var reclamos = await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();
+
+            var viewModel = new GestionReclamosVM
+            {
+                Reclamos = reclamos,
+                Estado = estado,
+                EstadosDisponibles = new List<string> { "En Proceso", "Resuelto" }
+            };
+
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = "Departamento")]
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstadoDepartamento(int idReclamo, string nuevoEstado)
+        {
+            if (nuevoEstado != "En Proceso" && nuevoEstado != "Resuelto")
+                return BadRequest("Estado no permitido para este rol.");
+
+            var correo = User.FindFirst("Correo")?.Value;
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+
+            var reclamo = await _context.Reclamos.FirstOrDefaultAsync(r => r.IdReclamo == idReclamo);
+            if (reclamo == null || reclamo.IdDepartamentoAsignado != usuario?.IdDepartamento)
+                return Forbid();
+
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar: true);
+            return Json(new { success = exito });
         }
     }
 }

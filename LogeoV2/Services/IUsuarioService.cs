@@ -1,5 +1,4 @@
 ﻿using LogeoV2.Models;
-
 namespace LogeoV2.Services
 {
     public interface IUsuarioService
@@ -13,5 +12,8 @@ namespace LogeoV2.Services
         /// Cambia el rol de un usuario
         /// </summary>
         Task<bool> CambiarRolUsuario(int idUsuario, int idRol);
+
+        Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento);
+        Task<List<Departamento>> ObtenerDepartamentos();
     }
 }

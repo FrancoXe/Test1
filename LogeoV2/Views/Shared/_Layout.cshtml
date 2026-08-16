@@ -31,9 +31,11 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Administracion" asp-action="Usuarios">Usuarios</a>
                             </li>
-
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Gestionar">Gestionar Reclamos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial de Reclamos</a>
                             </li>
                         }
                         <li class="nav-item">
@@ -44,9 +46,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="MisReclamos">Mis Reclamos</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial de Reclamos</a>
-                        </li>
+                        @if (User.IsInRole("Departamento"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="MisReclamosDepartamento">Mis Reclamos (Depto.)</a>
+                            </li>
+                        }
                         <li class="nav-item dropdown">
                             <a class="nav-link text-dark position-relative" href="#" id="dropdownNotificaciones"
                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -146,8 +151,7 @@
                     });
             });
         }
-    </script>
-    <script>
+
         async function cargarNotificaciones() {
             const res = await fetch('/Notificaciones/Obtener');
             if (!res.ok) return;

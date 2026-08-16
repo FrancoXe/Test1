@@ -63,5 +63,20 @@ namespace LogeoV2.Services
             _logger.LogInformation($"Rol del usuario {idUsuario} actualizado a {idRol}");
             return true;
         }
+        public async Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento)
+        {
+            var usuario = await _context.Usuarios.FindAsync(idUsuario);
+            if (usuario == null)
+                return false;
+
+            usuario.IdDepartamento = idDepartamento;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<Departamento>> ObtenerDepartamentos()
+        {
+            return await _context.Departamentos.ToListAsync();
+        }
     }
 }
