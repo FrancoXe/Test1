@@ -9,7 +9,7 @@ namespace LogeoV2.Services
         Task<List<Subcategoria>> ObtenerSubcategorias(int idCategoria);
         Task<List<Barrio>> ObtenerBarrios();
         Task<List<Reclamo>> ObtenerReclamos(string? estado);
-        Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado);
+        Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, bool notificar = true);
         Task<List<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda);
     }
 }

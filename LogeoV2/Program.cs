@@ -39,6 +39,9 @@ builder.Services.AddScoped<IExportService, ExportService>();
 // registrar servicio de reclamos
 builder.Services.AddScoped<IReclamoService, ReclamoService>();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+
 // Agregar servicios de autenticación por cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

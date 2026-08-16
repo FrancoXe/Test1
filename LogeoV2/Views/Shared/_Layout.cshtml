@@ -47,6 +47,19 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial de Reclamos</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark position-relative" href="#" id="dropdownNotificaciones"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell"></i>
+                                <span id="badgeNotificaciones" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle d-none">
+                                    0
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end p-2 shadow" style="width: 320px; max-height: 400px; overflow-y: auto;"
+                                 aria-labelledby="dropdownNotificaciones" id="listaNotificaciones">
+                                <div class="text-center text-muted py-3">Cargando...</div>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -133,6 +146,43 @@
                     });
             });
         }
+    </script>
+    <script>
+        async function cargarNotificaciones() {
+            const res = await fetch('/Notificaciones/Obtener');
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const badge = document.getElementById('badgeNotificaciones');
+            if (data.noLeidas > 0) {
+                badge.textContent = data.noLeidas;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+
+            const lista = document.getElementById('listaNotificaciones');
+            if (data.notificaciones.length === 0) {
+                lista.innerHTML = '<div class="text-center text-muted py-3">Sin notificaciones</div>';
+                return;
+            }
+
+            lista.innerHTML = data.notificaciones.map(n => `
+                <div class="dropdown-item-text border-bottom py-2 ${n.leida ? '' : 'bg-light'}" style="white-space: normal;">
+                    <strong>${n.titulo}</strong>
+                    <div class="small">${n.mensaje}</div>
+                    <div class="text-muted small">${n.fecha}</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('dropdownNotificaciones').addEventListener('click', async function () {
+            await fetch('/Notificaciones/MarcarTodasLeidas', { method: 'POST' });
+            setTimeout(cargarNotificaciones, 500);
+        });
+
+        cargarNotificaciones();
+        setInterval(cargarNotificaciones, 30000);
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

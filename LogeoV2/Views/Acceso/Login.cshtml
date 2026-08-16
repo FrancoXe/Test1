@@ -137,32 +137,29 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.toggle-password');
 
-    @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const toggleButtons = document.querySelectorAll('.toggle-password');
-                
-                toggleButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        const targetId = this.getAttribute('data-target');
-                        const passwordInput = document.getElementById(targetId);
-                        const icon = this.querySelector('i');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
 
-                        if (passwordInput.type === 'password') {
-                            passwordInput.type = 'text';
-                            icon.classList.remove('bi-eye-slash');
-                            icon.classList.add('bi-eye');
-                        } else {
-                            passwordInput.type = 'password';
-                            icon.classList.remove('bi-eye');
-                            icon.classList.add('bi-eye-slash');
-                        }
-                    });
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    }
                 });
             });
-        </script>
-    }
+        });
+    </script>
 </body>
 </html>

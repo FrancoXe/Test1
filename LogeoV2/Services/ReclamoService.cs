@@ -10,14 +10,20 @@ namespace LogeoV2.Services
         private readonly AppDBContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<ReclamoService> _logger;
+        private readonly INotificacionService _notificacionService;
 
         private static readonly string[] EstadosValidos = { "Pendiente", "Aceptado", "Rechazado", "En Proceso", "Resuelto" };
 
-        public ReclamoService(AppDBContext context, IWebHostEnvironment webHostEnvironment, ILogger<ReclamoService> logger)
+        public ReclamoService(
+            AppDBContext context,
+            IWebHostEnvironment webHostEnvironment,
+            ILogger<ReclamoService> logger,
+            INotificacionService notificacionService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
+            _notificacionService = notificacionService;
         }
 
         public async Task<Reclamo> CrearReclamo(Reclamo reclamo, IFormFile? archivo)
@@ -75,8 +81,7 @@ namespace LogeoV2.Services
 
             return await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();
         }
-
-        public async Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado)
+        public async Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, bool notificar = true)
         {
             if (!EstadosValidos.Contains(nuevoEstado))
                 return false;
@@ -98,6 +103,16 @@ namespace LogeoV2.Services
             }
 
             await _context.SaveChangesAsync();
+
+            if (notificar)
+            {
+                await _notificacionService.CrearNotificacion(
+                    reclamo.IdUsuario,
+                    $"Reclamo #{reclamo.IdReclamo} - {nuevoEstado}",
+                    $"Tu reclamo fue actualizado al estado: {nuevoEstado}."
+                );
+            }
+
             return true;
         }
 

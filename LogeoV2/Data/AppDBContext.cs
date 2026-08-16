@@ -26,6 +26,8 @@ namespace LogeoV2.Data
         public DbSet<Departamento> Departamentos { get; set; }
         public DbSet<Reclamo> Reclamos { get; set; }
 
+        public DbSet<Notificacion> Notificaciones { get; set; }
+
         public override int SaveChanges()
         {
             try 
@@ -262,6 +264,22 @@ namespace LogeoV2.Data
                     tb.HasOne(r => r.Usuario).WithMany().HasForeignKey(r => r.IdUsuario).OnDelete(DeleteBehavior.Restrict);
                     tb.HasOne(r => r.DepartamentoAsignado).WithMany().HasForeignKey(r => r.IdDepartamentoAsignado).OnDelete(DeleteBehavior.Restrict);
                 });
+
+            });
+
+            modelBuilder.Entity<Notificacion>(tb =>
+            {
+                tb.ToTable("Notificaciones");
+                tb.HasKey(x => x.IdNotificacion);
+                tb.Property(x => x.IdNotificacion).UseIdentityColumn().ValueGeneratedOnAdd();
+                tb.Property(x => x.Titulo).HasMaxLength(100).IsRequired();
+                tb.Property(x => x.Mensaje).HasMaxLength(300).IsRequired();
+                tb.Property(x => x.Leida).IsRequired();
+
+                tb.HasOne(n => n.Usuario)
+                  .WithMany()
+                  .HasForeignKey(n => n.IdUsuario)
+                  .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -6,7 +6,6 @@ using LogeoV2.Models;
 using LogeoV2.Services;
 using LogeoV2.ViewModels;
 
-
 namespace LogeoV2.Controllers
 {
     [Authorize]
@@ -75,27 +74,7 @@ namespace LogeoV2.Controllers
 
             return Json(new { success = true, mensaje = "Reclamo creado exitosamente" });
         }
-        [Authorize(Roles = "Administrador")]
-        [HttpGet]
-        public async Task<IActionResult> Gestionar(string? estado)
-        {
-            var reclamos = await _reclamoService.ObtenerReclamos(estado);
-            var viewModel = new GestionReclamosVM
-            {
-                Reclamos = reclamos,
-                Estado = estado
-            };
-            return View(viewModel);
-        }
 
-        [Authorize(Roles = "Administrador")]
-        [HttpPost]
-        public async Task<IActionResult> CambiarEstado(int idReclamo, string nuevoEstado, string? estado)
-        {
-            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado);
-            TempData["Mensaje"] = exito ? "Estado actualizado exitosamente." : "No se pudo actualizar el estado.";
-            return RedirectToAction(nameof(Gestionar), new { estado });
-        }
         [HttpGet]
         public async Task<IActionResult> MisReclamos()
         {
@@ -114,6 +93,37 @@ namespace LogeoV2.Controllers
 
             return View(reclamos);
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Gestionar(string? estado)
+        {
+            var reclamos = await _reclamoService.ObtenerReclamos(estado);
+            var viewModel = new GestionReclamosVM
+            {
+                Reclamos = reclamos,
+                Estado = estado
+            };
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstado(int idReclamo, string nuevoEstado, string? estado, bool notificar = true)
+        {
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar);
+            TempData["Mensaje"] = exito ? "Estado actualizado exitosamente." : "No se pudo actualizar el estado.";
+            return RedirectToAction(nameof(Gestionar), new { estado });
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstadoAjax(int idReclamo, string nuevoEstado, bool notificar = true)
+        {
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar);
+            return Json(new { success = exito });
+        }
+
         [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> Historial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda)
@@ -144,18 +154,18 @@ namespace LogeoV2.Controllers
 
             var encabezados = new List<string> { "ID", "DNI", "Vecino", "Categoría", "Subcategoría", "Barrio", "Dirección", "Descripción", "Fecha", "Estado" };
             var filas = reclamos.Select(r => new List<string>
-    {
-        r.IdReclamo.ToString(),
-        r.DNI,
-        $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
-        r.Categoria?.Nombre ?? "",
-        r.Subcategoria?.Nombre ?? "",
-        r.Barrio?.Nombre ?? "",
-        r.Direccion,
-        r.Descripcion,
-        r.FechaCreacion.ToString("g"),
-        r.Estado
-    }).ToList();
+            {
+                r.IdReclamo.ToString(),
+                r.DNI,
+                $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
+                r.Categoria?.Nombre ?? "",
+                r.Subcategoria?.Nombre ?? "",
+                r.Barrio?.Nombre ?? "",
+                r.Direccion,
+                r.Descripcion,
+                r.FechaCreacion.ToString("g"),
+                r.Estado
+            }).ToList();
 
             var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
 
@@ -169,6 +179,30 @@ namespace LogeoV2.Controllers
                     "text/csv", $"Historial_{fecha}.csv"),
                 _ => BadRequest("Formato no soportado")
             };
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerDetallePdf(int id)
+        {
+            var reclamo = await _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Include(r => r.DepartamentoAsignado)
+                .FirstOrDefaultAsync(r => r.IdReclamo == id);
+
+            if (reclamo == null)
+                return NotFound();
+
+            var correo = User.FindFirst("Correo")?.Value;
+            var esAdmin = User.IsInRole("Administrador");
+            var esDueno = reclamo.Usuario?.Correo == correo;
+
+            if (!esAdmin && !esDueno)
+                return Forbid();
+
+            var pdf = _exportService.ExportarReclamoDetalle(reclamo);
+            return File(pdf, "application/pdf");
         }
     }
 }

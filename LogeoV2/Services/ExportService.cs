@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using LogeoV2.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -105,6 +106,76 @@ namespace LogeoV2.Services
                 return $"\"{valor.Replace("\"", "\"\"")}\"";
             }
             return valor;
+        }
+        public byte[] ExportarReclamoDetalle(Reclamo reclamo)
+        {
+            var documento = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(40);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header().Column(col =>
+                    {
+                        col.Item().Text("Municipalidad de Unquillo").FontSize(18).Bold();
+                        col.Item().Text("Informe de Reclamo").FontSize(14).FontColor(Colors.Grey.Darken1);
+                        col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                    });
+
+                    page.Content().PaddingVertical(15).Column(col =>
+                    {
+                        col.Spacing(8);
+
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"N° de Reclamo: {reclamo.IdReclamo}").Bold();
+                            row.RelativeItem().AlignRight().Text($"Fecha: {reclamo.FechaCreacion:dd/MM/yyyy HH:mm}");
+                        });
+
+                        col.Item().PaddingTop(10).Text("Datos del Vecino").Bold().FontSize(13);
+                        col.Item().Text($"Nombre: {reclamo.Usuario?.Nombre} {reclamo.Usuario?.Apellido}");
+                        col.Item().Text($"DNI: {reclamo.DNI}");
+                        col.Item().Text($"Correo: {reclamo.Usuario?.Correo}");
+
+                        col.Item().PaddingTop(10).Text("Detalle del Reclamo").Bold().FontSize(13);
+                        col.Item().Text($"Categoría: {reclamo.Categoria?.Nombre}");
+                        col.Item().Text($"Subcategoría: {reclamo.Subcategoria?.Nombre}");
+                        col.Item().Text($"Barrio: {reclamo.Barrio?.Nombre}");
+                        col.Item().Text($"Dirección: {reclamo.Direccion}");
+                        col.Item().Text("Descripción:").Bold();
+                        col.Item().Background(Colors.Grey.Lighten4).Padding(8).Text(reclamo.Descripcion);
+
+                        col.Item().PaddingTop(10).Text("Estado y Seguimiento").Bold().FontSize(13);
+                        col.Item().Text($"Estado actual: {reclamo.Estado}").FontColor(Colors.Blue.Darken1).Bold();
+                        col.Item().Text($"Departamento asignado: {reclamo.DepartamentoAsignado?.Nombre ?? "Sin asignar"}");
+                        if (reclamo.FechaActualizacion.HasValue)
+                        {
+                            col.Item().Text($"Última actualización: {reclamo.FechaActualizacion:dd/MM/yyyy HH:mm}");
+                        }
+
+                        if (!string.IsNullOrEmpty(reclamo.RutaArchivo))
+                        {
+                            col.Item().PaddingTop(10).Text("Este reclamo incluye un archivo adjunto (no incorporado en este informe).")
+                                .FontSize(9).FontColor(Colors.Grey.Darken1).Italic();
+                        }
+                    });
+
+                    page.Footer().AlignCenter().Column(col =>
+                    {
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                        col.Item().PaddingTop(5).Text(x =>
+                        {
+                            x.Span("Documento generado el ");
+                            x.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
+                            x.Span(" · Sistema de Gestión de Reclamos - Municipalidad de Unquillo").FontSize(8);
+                        });
+                    });
+                });
+            });
+
+            return documento.GeneratePdf();
         }
     }
 }

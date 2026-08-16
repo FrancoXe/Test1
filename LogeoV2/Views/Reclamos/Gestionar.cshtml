@@ -36,13 +36,13 @@
             <th>Fecha</th>
             <th>Estado</th>
             <th>Departamento Asignado</th>
-            <th>Cambiar Estado</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var r in Model.Reclamos)
         {
-            <tr>
+            <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
                 <td>@r.IdReclamo</td>
                 <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
                 <td>@r.Categoria?.Nombre</td>
@@ -51,22 +51,69 @@
                 <td>@r.Direccion</td>
                 <td>@r.Descripcion</td>
                 <td>@r.FechaCreacion.ToString("g")</td>
-                <td>@r.Estado</td>
+                <td>
+                    <select class="form-select form-select-sm select-estado">
+                        @foreach (var e in Model.EstadosDisponibles)
+                        {
+                            <option value="@e" selected="@(e == r.Estado)">@e</option>
+                        }
+                    </select>
+                </td>
                 <td>@(r.DepartamentoAsignado?.Nombre ?? "—")</td>
                 <td>
-                    <form method="post" asp-action="CambiarEstado" class="d-flex gap-2">
-                        <input type="hidden" name="idReclamo" value="@r.IdReclamo" />
-                        <input type="hidden" name="estado" value="@Model.Estado" />
-                        <select name="nuevoEstado" class="form-select form-select-sm">
-                            @foreach (var e in Model.EstadosDisponibles)
-                            {
-                                <option value="@e" selected="@(e == r.Estado)">@e</option>
-                            }
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
+                            style="width: 32px; height: 32px; padding: 0;"
+                            title="Ver más"
+                            onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnGuardarCambios').addEventListener('click', async function () {
+            const filas = document.querySelectorAll('tr[data-id-reclamo]');
+            const cambios = [];
+
+            filas.forEach(fila => {
+                const idReclamo = fila.getAttribute('data-id-reclamo');
+                const estadoOriginal = fila.getAttribute('data-estado-original');
+                const nuevoEstado = fila.querySelector('.select-estado').value;
+
+                if (nuevoEstado !== estadoOriginal) {
+                    cambios.push({ idReclamo, nuevoEstado });
+                }
+            });
+
+            if (cambios.length === 0) {
+                alert('No hay cambios para guardar.');
+                return;
+            }
+
+            const boton = document.getElementById('btnGuardarCambios');
+            boton.disabled = true;
+            boton.textContent = 'Guardando...';
+
+            for (const cambio of cambios) {
+                const formData = new URLSearchParams();
+                formData.append('idReclamo', cambio.idReclamo);
+                formData.append('nuevoEstado', cambio.nuevoEstado);
+                formData.append('notificar', 'true');
+
+                await fetch('@Url.Action("CambiarEstadoAjax", "Reclamos")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+            }
+
+            location.reload();
+        });
+    </script>
+}
