@@ -1,0 +1,548 @@
+﻿@model LogeoV2.ViewModels.MetricasReclamosVM
+@{
+    ViewData["Title"] = "Reportes";
+    var categoriasJson = System.Text.Json.JsonSerializer.Serialize(Model.PorCategoria.Select(c => c.Nombre));
+    var cantidadesJson = System.Text.Json.JsonSerializer.Serialize(Model.PorCategoria.Select(c => c.Cantidad));
+    var departamentosJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamento.Select(d => d.Nombre));
+    var cantidadesDeptoJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamento.Select(d => d.Cantidad));
+    var barriosJson = System.Text.Json.JsonSerializer.Serialize(Model.PorBarrio.Select(b => b.Nombre));
+    var cantidadesBarrioJson = System.Text.Json.JsonSerializer.Serialize(Model.PorBarrio.Select(b => b.Cantidad));
+    var departamentosPendJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamentoPendientes.Select(d => d.Nombre));
+    var cantidadesDeptoPendJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamentoPendientes.Select(d => d.Cantidad));
+}
+
+<h1>Reportes</h1>
+
+<form method="get" asp-action="Metricas" class="mb-4">
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                type="button" id="dropdownFiltrosMetricas" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-sliders"></i> Filtros
+        </button>
+        <div class="dropdown-menu p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltrosMetricas">
+            <div class="mb-2">
+                <label class="form-label mb-1">Desde</label>
+                <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label mb-1">Hasta</label>
+                <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
+        </div>
+    </div>
+</form>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Total de reclamos</div>
+            <div class="fs-2 fw-bold">@Model.TotalReclamos</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Resueltos</div>
+            <div class="fs-2 fw-bold text-success">@Model.TotalResueltos</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Pendientes / en curso</div>
+            <div class="fs-2 fw-bold text-warning">@Model.TotalPendientes</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Promedio de resolución</div>
+            <div class="fs-2 fw-bold">@Model.TiempoPromedioResolucionDias.ToString("F1") días</div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="tabsMetricas" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabResumen" type="button">Resumen</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMotivo" type="button">Motivo</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDepartamento" type="button">Departamento</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBarrio" type="button">Barrio</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTendencia" type="button">Tendencia</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNotificaciones" type="button">Notificaciones</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabResumen">
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="chartResumen" style="max-height: 350px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <table class="table">
+                    <tbody>
+                        <tr><td>Resueltos</td><td class="fw-bold">@Model.TotalResueltos</td></tr>
+                        <tr><td>Pendientes / en curso</td><td class="fw-bold">@Model.TotalPendientes</td></tr>
+                        <tr><td>Total</td><td class="fw-bold">@Model.TotalReclamos</td></tr>
+                        <tr><td>Promedio de resolución</td><td class="fw-bold">@Model.TiempoPromedioResolucionDias.ToString("F1") días</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabMotivo">
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="chartMotivo" style="max-height: 400px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <table class="table">
+                    <tbody>
+                        @foreach (var c in Model.PorCategoria)
+                        {
+                            <tr>
+                                <td>@c.Nombre</td>
+                                <td class="fw-bold">@c.Cantidad</td>
+                                <td class="text-muted">@c.PromedioDias.ToString("F1") días</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabDepartamento">
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="checkSoloPendientesDepto">
+            <label class="form-check-label" for="checkSoloPendientesDepto">Mostrar solo reclamos pendientes</label>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="chartDepartamento" style="max-height: 400px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <table class="table" id="tablaDepartamento">
+                    <tbody>
+                        @foreach (var d in Model.PorDepartamento)
+                        {
+                            <tr>
+                                <td>@d.Nombre</td>
+                                <td class="fw-bold">@d.Cantidad</td>
+                                <td class="text-muted">@d.PromedioDias.ToString("F1") días</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabBarrio">
+        <div class="mb-3">
+            <select id="selectVistaBarrio" class="form-select" style="max-width: 280px;">
+                <option value="cantidad">Cantidad por barrio</option>
+                <option value="estado">Estado actual por barrio</option>
+                <option value="motivo">Motivo de reclamo por barrio</option>
+            </select>
+        </div>
+
+        <div id="vistaCantidadBarrio">
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="chartBarrio" style="max-height: 400px;"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <table class="table">
+                        <tbody>
+                            @foreach (var b in Model.PorBarrio)
+                            {
+                                <tr>
+                                    <td>@b.Nombre</td>
+                                    <td class="fw-bold">@b.Cantidad</td>
+                                    <td class="text-muted">@b.PromedioDias.ToString("F1") días</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="vistaEstadoBarrio" class="d-none">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Barrio</th>
+                        <th>Pendiente</th>
+                        <th>Aceptado</th>
+                        <th>En Proceso</th>
+                        <th>Resuelto</th>
+                        <th>Rechazado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.EstadoPorBarrio)
+                    {
+                        <tr>
+                            <td>@e.Barrio</td>
+                            <td>@e.Pendiente</td>
+                            <td>@e.Aceptado</td>
+                            <td>@e.EnProceso</td>
+                            <td>@e.Resuelto</td>
+                            <td>@e.Rechazado</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div id="vistaMotivoBarrio" class="d-none">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Barrio</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model.MotivoPorBarrio)
+                    {
+                        @foreach (var c in b.Categorias)
+                        {
+                            <tr>
+                                <td>@b.Barrio</td>
+                                <td>@c.Categoria</td>
+                                <td class="fw-bold">@c.Cantidad</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabTendencia">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card p-3">
+                    <label class="form-label fw-bold">Ver por</label>
+                    <select id="selectGranularidad" class="form-select mb-3">
+                        <option value="anio">Año completo (mensual)</option>
+                        <option value="mes">Mes específico (diario)</option>
+                    </select>
+
+                    <div id="contenedorSelectorAnio">
+                        <label class="form-label fw-bold">Años a comparar</label>
+                        <div id="listaCheckboxAnios" class="mb-2"></div>
+                    </div>
+
+                    <div id="contenedorSelectorMes" class="d-none">
+                        <label class="form-label fw-bold">Agregar mes</label>
+                        <input type="month" id="inputMesEspecifico" class="form-control mb-2" />
+                        <button type="button" id="btnAgregarMes" class="btn btn-outline-secondary btn-sm w-100 mb-2">+ Agregar</button>
+                        <div id="listaMesesSeleccionados" class="d-flex flex-wrap gap-2 mb-2"></div>
+                    </div>
+
+                    <button type="button" id="btnActualizarTendencia" class="btn btn-primary w-100 mt-2">Actualizar gráfico</button>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="card p-3">
+                    <canvas id="chartTendencia" style="max-height: 420px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabNotificaciones">
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="chartNotificaciones" style="max-height: 350px;"></canvas>
+            </div>
+            <div class="col-md-6">
+                <table class="table">
+                    <tbody>
+                        <tr><td>Notificados</td><td class="fw-bold">@Model.Notificaciones.Notificados</td></tr>
+                        <tr><td>No notificados</td><td class="fw-bold">@Model.Notificaciones.NoNotificados</td></tr>
+                        <tr><td>Total</td><td class="fw-bold">@Model.Notificaciones.TotalReclamos</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mt-3">
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                id="dropdownExportarMetricas" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download"></i> Exportar
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportarMetricas">
+            <li>
+                <a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="excel"
+                   asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">
+                    Excel (.xlsx)
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="pdf"
+                   asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">
+                    PDF
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="csv"
+                   asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">
+                    CSV
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script id="datosMetricas" type="application/json">
+        {
+            "categorias": @Html.Raw(categoriasJson),
+            "cantidades": @Html.Raw(cantidadesJson),
+            "departamentos": @Html.Raw(departamentosJson),
+            "cantidadesDepto": @Html.Raw(cantidadesDeptoJson),
+            "barrios": @Html.Raw(barriosJson),
+            "cantidadesBarrio": @Html.Raw(cantidadesBarrioJson),
+            "departamentosPend": @Html.Raw(departamentosPendJson),
+            "cantidadesDeptoPend": @Html.Raw(cantidadesDeptoPendJson)
+        }
+    </script>
+    <script>
+        const datosMetricas = JSON.parse(document.getElementById('datosMetricas').textContent);
+
+        const ctxResumen = document.getElementById('chartResumen');
+        const chartResumenObj = new Chart(ctxResumen, {
+            type: 'pie',
+            data: {
+                labels: ['Resueltos', 'Pendientes / en curso'],
+                datasets: [{
+                    data: [@Model.TotalResueltos, @Model.TotalPendientes],
+                    backgroundColor: ['#198754', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        const ctxMotivo = document.getElementById('chartMotivo');
+        const chartMotivoObj = new Chart(ctxMotivo, {
+            type: 'bar',
+            data: {
+                labels: datosMetricas.categorias,
+                datasets: [{ label: 'Cantidad de reclamos', data: datosMetricas.cantidades, backgroundColor: '#0d6efd' }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        let chartDepartamentoActual = null;
+        function renderChartDepartamento(usarPendientes) {
+            const labels = usarPendientes ? datosMetricas.departamentosPend : datosMetricas.departamentos;
+            const datos = usarPendientes ? datosMetricas.cantidadesDeptoPend : datosMetricas.cantidadesDepto;
+
+            if (chartDepartamentoActual) chartDepartamentoActual.destroy();
+            chartDepartamentoActual = new Chart(document.getElementById('chartDepartamento'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Cantidad', data: datos, backgroundColor: '#6f42c1' }] },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+        renderChartDepartamento(false);
+
+        document.getElementById('checkSoloPendientesDepto').addEventListener('change', function () {
+            renderChartDepartamento(this.checked);
+        });
+
+        const ctxBarrio = document.getElementById('chartBarrio');
+        const chartBarrioObj = new Chart(ctxBarrio, {
+            type: 'bar',
+            data: {
+                labels: datosMetricas.barrios,
+                datasets: [{ label: 'Cantidad', data: datosMetricas.cantidadesBarrio, backgroundColor: '#20c997' }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+
+        document.getElementById('selectVistaBarrio').addEventListener('change', function () {
+            const valor = this.value;
+            document.getElementById('vistaCantidadBarrio').classList.toggle('d-none', valor !== 'cantidad');
+            document.getElementById('vistaEstadoBarrio').classList.toggle('d-none', valor !== 'estado');
+            document.getElementById('vistaMotivoBarrio').classList.toggle('d-none', valor !== 'motivo');
+
+            if (valor === 'cantidad') {
+                setTimeout(() => chartBarrioObj.resize(), 50);
+            }
+        });
+
+        const ctxNotificaciones = document.getElementById('chartNotificaciones');
+        const chartNotificacionesObj = new Chart(ctxNotificaciones, {
+            type: 'pie',
+            data: {
+                labels: ['Notificados', 'No notificados'],
+                datasets: [{
+                    data: [@Model.Notificaciones.Notificados, @Model.Notificaciones.NoNotificados],
+                    backgroundColor: ['#0d6efd', '#dc3545']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        let chartTendencia = null;
+        let mesesSeleccionados = [];
+
+        const selectGranularidad = document.getElementById('selectGranularidad');
+        const contenedorAnio = document.getElementById('contenedorSelectorAnio');
+        const contenedorMes = document.getElementById('contenedorSelectorMes');
+
+        selectGranularidad.addEventListener('change', function () {
+            document.querySelectorAll('.check-anio').forEach(c => c.checked = false);
+            mesesSeleccionados = [];
+            actualizarListaMeses();
+
+            if (this.value === 'anio') {
+                contenedorAnio.classList.remove('d-none');
+                contenedorMes.classList.add('d-none');
+            } else {
+                contenedorAnio.classList.add('d-none');
+                contenedorMes.classList.remove('d-none');
+            }
+        });
+
+        fetch('@Url.Action("ObtenerAnios", "Reclamos")')
+            .then(res => res.json())
+            .then(anios => {
+                const contenedor = document.getElementById('listaCheckboxAnios');
+                anios.forEach((a, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'form-check';
+                    div.innerHTML = `
+                        <input class="form-check-input check-anio" type="checkbox" value="${a}" id="anio${a}" ${i === 0 ? 'checked' : ''}>
+                        <label class="form-check-label" for="anio${a}">${a}</label>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            });
+
+        document.getElementById('btnAgregarMes').addEventListener('click', function () {
+            const valor = document.getElementById('inputMesEspecifico').value;
+            if (!valor) return;
+            const periodo = valor.replace('-0', '-');
+
+            if (!mesesSeleccionados.includes(periodo)) {
+                mesesSeleccionados.push(periodo);
+                actualizarListaMeses();
+            }
+        });
+
+        function actualizarListaMeses() {
+            const contenedor = document.getElementById('listaMesesSeleccionados');
+            contenedor.innerHTML = '';
+
+            mesesSeleccionados.forEach(periodo => {
+                const [anio, mes] = periodo.split('-');
+                const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const etiqueta = `${nombresMeses[parseInt(mes) - 1]} ${anio}`;
+
+                const chip = document.createElement('span');
+                chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-2';
+                chip.innerHTML = `${etiqueta} <button type="button" class="btn-close" style="font-size: 0.55rem;"></button>`;
+
+                chip.querySelector('button').addEventListener('click', function () {
+                    mesesSeleccionados = mesesSeleccionados.filter(p => p !== periodo);
+                    actualizarListaMeses();
+                });
+
+                contenedor.appendChild(chip);
+            });
+        }
+
+        document.getElementById('btnActualizarTendencia').addEventListener('click', function () {
+            let periodos = [];
+
+            if (selectGranularidad.value === 'anio') {
+                periodos = Array.from(document.querySelectorAll('.check-anio:checked')).map(c => c.value);
+            } else {
+                periodos = mesesSeleccionados;
+            }
+
+            if (periodos.length === 0) {
+                alert('Seleccioná al menos un período para graficar.');
+                return;
+            }
+
+            fetch('@Url.Action("ObtenerTendencia", "Reclamos")?periodos=' + encodeURIComponent(periodos.join(',')))
+                .then(res => res.json())
+                .then(data => {
+                    const colores = ['#0d6efd', '#dc3545', '#198754', '#fd7e14', '#6f42c1', '#20c997'];
+
+                    if (chartTendencia) chartTendencia.destroy();
+
+                    const ctx = document.getElementById('chartTendencia');
+                    chartTendencia = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.series.map((s, i) => ({
+                                label: s.nombre,
+                                data: s.datos,
+                                borderColor: colores[i % colores.length],
+                                backgroundColor: colores[i % colores.length],
+                                tension: 0.2,
+                                fill: false
+                            }))
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { position: 'bottom' } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        }
+                    });
+                });
+        });
+
+        document.querySelectorAll('#tabsMetricas button').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function () {
+                setTimeout(function () {
+                    [chartResumenObj, chartMotivoObj, chartDepartamentoActual, chartBarrioObj, chartNotificacionesObj]
+                        .forEach(c => { if (c) c.resize(); });
+                }, 50);
+            });
+        });
+    </script>
+}

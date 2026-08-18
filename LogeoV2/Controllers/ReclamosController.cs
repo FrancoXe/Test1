@@ -246,5 +246,57 @@ namespace LogeoV2.Controllers
             var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar: true);
             return Json(new { success = exito });
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Metricas(DateTime? fechaDesde, DateTime? fechaHasta)
+        {
+            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
+            return View(vm);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ExportarMetricas(string formato, DateTime? fechaDesde, DateTime? fechaHasta)
+        {
+            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
+
+            var encabezados = new List<string> { "Categoría", "Cantidad", "Promedio días resolución" };
+            var filas = vm.PorCategoria.Select(c => new List<string>
+    {
+        c.Nombre,
+        c.Cantidad.ToString(),
+        c.PromedioDias.ToString("F1")
+    }).ToList();
+
+            var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
+
+            return formato switch
+            {
+                "excel" => File(_exportService.ExportarExcel("Métricas por Categoría", encabezados, filas),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Metricas_{fecha}.xlsx"),
+                "pdf" => File(_exportService.ExportarPdf("Métricas por Categoría", encabezados, filas),
+                    "application/pdf", $"Metricas_{fecha}.pdf"),
+                "csv" => File(_exportService.ExportarCsv(encabezados, filas),
+                    "text/csv", $"Metricas_{fecha}.csv"),
+                _ => BadRequest("Formato no soportado")
+            };
+        }
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerAnios()
+        {
+            var anios = await _reclamoService.ObtenerAniosDisponibles();
+            return Json(anios);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerTendencia(string periodos)
+        {
+            var lista = periodos.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var vm = await _reclamoService.ObtenerTendencia(lista);
+            return Json(vm);
+        }
     }
 }

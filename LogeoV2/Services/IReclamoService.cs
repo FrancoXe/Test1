@@ -1,4 +1,5 @@
 ﻿using LogeoV2.Models;
+using LogeoV2.ViewModels;
 
 namespace LogeoV2.Services
 {
@@ -11,5 +12,9 @@ namespace LogeoV2.Services
         Task<List<Reclamo>> ObtenerReclamos(string? estado);
         Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, bool notificar = true);
         Task<List<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda);
+
+        Task<MetricasReclamosVM> ObtenerMetricas(DateTime? desde, DateTime? hasta);
+        Task<List<int>> ObtenerAniosDisponibles();
+        Task<TendenciaVM> ObtenerTendencia(List<string> periodos);
     }
 }
