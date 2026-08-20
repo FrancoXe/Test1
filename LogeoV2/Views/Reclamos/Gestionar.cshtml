@@ -11,16 +11,36 @@
     <div class="alert alert-info">@TempData["Mensaje"]</div>
 }
 
-<form method="get" asp-action="Gestionar" class="mb-4 d-flex gap-2 align-items-end">
-    <div>
-        <label class="form-label mb-1">Filtrar por estado</label>
-        <select name="estado" class="form-select" onchange="this.form.submit()">
-            <option value="">Todos</option>
-            @foreach (var e in Model.EstadosDisponibles)
-            {
-                <option value="@e" selected="@(Model.Estado == e)">@e</option>
-            }
-        </select>
+<form method="get" asp-action="Gestionar" class="mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
+            <input type="text" name="busqueda" value="@Model.Busqueda"
+                   class="form-control border-0 ps-4" placeholder="Buscar por vecino"
+                   style="box-shadow: none;" />
+            <button type="submit" class="btn btn-light border-0 px-3">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+
+        <div class="dropdown ms-auto">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                    type="button" id="dropdownFiltrosGestionar" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-sliders"></i> Filtros
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 260px;" aria-labelledby="dropdownFiltrosGestionar">
+                <div class="mb-3">
+                    <label class="form-label mb-1">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var e in Model.EstadosDisponibles)
+                        {
+                            <option value="@e" selected="@(Model.Estado == e)">@e</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
+            </div>
+        </div>
     </div>
 </form>
 

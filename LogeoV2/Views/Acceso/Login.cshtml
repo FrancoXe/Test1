@@ -15,14 +15,15 @@
     <style>
         .auth-wrapper {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #fff5eb 0%, #ffe0c2 100%);
         }
 
         .auth-card {
             max-width: 400px;
             border: none;
+            border-top: 4px solid #fd7e14;
             border-radius: 1rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            box-shadow: 0 0.5rem 1.5rem rgba(253, 126, 20, 0.15);
         }
 
         .auth-header {
@@ -43,6 +44,11 @@
             padding: 0.75rem 1rem;
         }
 
+            .form-control:focus {
+                border-color: #fd7e14;
+                box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.25);
+            }
+
         .form-floating > label {
             padding: 0.75rem 1rem;
         }
@@ -52,6 +58,27 @@
             padding: 0.75rem 1rem;
             font-weight: 500;
         }
+
+        .btn-primary {
+            background-color: #fd7e14;
+            border-color: #fd7e14;
+        }
+
+            .btn-primary:hover {
+                background-color: #e26e0f;
+                border-color: #e26e0f;
+            }
+
+        .btn-outline-secondary {
+            border-color: #fd7e14;
+            color: #fd7e14;
+        }
+
+            .btn-outline-secondary:hover {
+                background-color: #fd7e14;
+                border-color: #fd7e14;
+                color: #fff;
+            }
 
         .divider {
             display: flex;
@@ -79,9 +106,9 @@
         <div class="container">
             <div class="card auth-card mx-auto">
                 <div class="auth-header">
-                    <img src="~/img/logo.png" alt="Logo" class="mb-4" />
+                    <img src="~/img/logo-navbar.png" alt="Municipalidad de Unquillo" class="mb-2" />
                     <h4 class="mb-0">Iniciar Sesión</h4>
-                    <p class="text-muted">Ingresa tus credenciales</p>
+                    <p class="text-muted">Ingresá tus credenciales</p>
                 </div>
                 <div class="card-body p-4">
                     @if (TempData["RegistroExitoso"] != null)
@@ -104,7 +131,7 @@
                             <input type="password" class="form-control pe-5" id="clave" placeholder="Contraseña" asp-for="Clave">
                             <label for="clave"><i class="bi bi-lock me-2"></i>Contraseña</label>
                             <span asp-validation-for="Clave" class="text-danger"></span>
-                            <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y toggle-password p-0" 
+                            <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y toggle-password p-0"
                                     data-target="clave">
                                 <i class="bi bi-eye-slash text-secondary"></i>
                             </button>
@@ -123,7 +150,7 @@
                         </button>
 
                         <div class="divider">
-                            <span>¿No tienes una cuenta?</span>
+                            <span>¿No tenés una cuenta?</span>
                         </div>
 
                         <a asp-controller="Acceso" asp-action="Registrarse" class="btn btn-outline-secondary w-100 btn-login">

@@ -65,7 +65,7 @@ namespace LogeoV2.Services
         public async Task<List<Barrio>> ObtenerBarrios() =>
             await _context.Barrios.ToListAsync();
 
-        public async Task<List<Reclamo>> ObtenerReclamos(string? estado)
+        public async Task<List<Reclamo>> ObtenerReclamos(string? estado, string? busqueda = null)
         {
             var query = _context.Reclamos
                 .Include(r => r.Usuario)
@@ -78,6 +78,14 @@ namespace LogeoV2.Services
             if (!string.IsNullOrWhiteSpace(estado))
             {
                 query = query.Where(r => r.Estado == estado);
+            }
+
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var termino = busqueda.Trim().ToLower();
+                query = query.Where(r =>
+                    r.Usuario!.Nombre.ToLower().Contains(termino) ||
+                    r.Usuario!.Apellido.ToLower().Contains(termino));
             }
 
             return await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();

@@ -96,16 +96,17 @@ namespace LogeoV2.Controllers
 
         [Authorize(Roles = "Administrador")]
         [HttpGet]
-        public async Task<IActionResult> Gestionar(string? estado)
+        public async Task<IActionResult> Gestionar(string? estado, string? busqueda)
         {
-            var reclamos = await _reclamoService.ObtenerReclamos(estado);
+            var reclamos = await _reclamoService.ObtenerReclamos(estado, busqueda);
             var vencidos = await _reclamoService.ObtenerReclamosVencidos();
 
             var viewModel = new GestionReclamosVM
             {
                 Reclamos = reclamos,
                 ReclamosVencidos = vencidos,
-                Estado = estado
+                Estado = estado,
+                Busqueda = busqueda
             };
             return View(viewModel);
         }

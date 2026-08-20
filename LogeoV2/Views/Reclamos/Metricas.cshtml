@@ -15,21 +15,23 @@
 <h1>Reportes</h1>
 
 <form method="get" asp-action="Metricas" class="mb-4">
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
-                type="button" id="dropdownFiltrosMetricas" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-sliders"></i> Filtros
-        </button>
-        <div class="dropdown-menu p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltrosMetricas">
-            <div class="mb-2">
-                <label class="form-label mb-1">Desde</label>
-                <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+    <div class="d-flex align-items-center gap-2">
+        <div class="dropdown ms-auto">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                    type="button" id="dropdownFiltrosMetricas" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-sliders"></i> Filtros
+            </button>
+            <div class="dropdown-menu p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltrosMetricas">
+                <div class="mb-2">
+                    <label class="form-label mb-1">Desde</label>
+                    <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label mb-1">Hasta</label>
+                    <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
             </div>
-            <div class="mb-3">
-                <label class="form-label mb-1">Hasta</label>
-                <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
         </div>
     </div>
 </form>
@@ -329,123 +331,123 @@
         }
     </script>
     <script>
-        const datosMetricas = JSON.parse(document.getElementById('datosMetricas').textContent);
+                const datosMetricas = JSON.parse(document.getElementById('datosMetricas').textContent);
 
-        const ctxResumen = document.getElementById('chartResumen');
-        const chartResumenObj = new Chart(ctxResumen, {
-            type: 'pie',
-            data: {
-                labels: ['Resueltos', 'Pendientes / en curso'],
-                datasets: [{
-                    data: [@Model.TotalResueltos, @Model.TotalPendientes],
-                    backgroundColor: ['#198754', '#ffc107']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+                const ctxResumen = document.getElementById('chartResumen');
+                const chartResumenObj = new Chart(ctxResumen, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Resueltos', 'Pendientes / en curso'],
+                        datasets: [{
+                            data: [@Model.TotalResueltos, @Model.TotalPendientes],
+                            backgroundColor: ['#198754', '#ffc107']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
 
-        const ctxMotivo = document.getElementById('chartMotivo');
-        const chartMotivoObj = new Chart(ctxMotivo, {
-            type: 'bar',
-            data: {
-                labels: datosMetricas.categorias,
-                datasets: [{ label: 'Cantidad de reclamos', data: datosMetricas.cantidades, backgroundColor: '#0d6efd' }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
+                const ctxMotivo = document.getElementById('chartMotivo');
+                const chartMotivoObj = new Chart(ctxMotivo, {
+                    type: 'bar',
+                    data: {
+                        labels: datosMetricas.categorias,
+                        datasets: [{ label: 'Cantidad de reclamos', data: datosMetricas.cantidades, backgroundColor: '#0d6efd' }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
 
-        let chartDepartamentoActual = null;
-        function renderChartDepartamento(usarPendientes) {
-            const labels = usarPendientes ? datosMetricas.departamentosPend : datosMetricas.departamentos;
-            const datos = usarPendientes ? datosMetricas.cantidadesDeptoPend : datosMetricas.cantidadesDepto;
+                let chartDepartamentoActual = null;
+                function renderChartDepartamento(usarPendientes) {
+                    const labels = usarPendientes ? datosMetricas.departamentosPend : datosMetricas.departamentos;
+                    const datos = usarPendientes ? datosMetricas.cantidadesDeptoPend : datosMetricas.cantidadesDepto;
 
-            if (chartDepartamentoActual) chartDepartamentoActual.destroy();
-            chartDepartamentoActual = new Chart(document.getElementById('chartDepartamento'), {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Cantidad', data: datos, backgroundColor: '#6f42c1' }] },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    if (chartDepartamentoActual) chartDepartamentoActual.destroy();
+                    chartDepartamentoActual = new Chart(document.getElementById('chartDepartamento'), {
+                        type: 'bar',
+                        data: { labels: labels, datasets: [{ label: 'Cantidad', data: datos, backgroundColor: '#6f42c1' }] },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        }
+                    });
+                }
+                renderChartDepartamento(false);
+
+                document.getElementById('checkSoloPendientesDepto').addEventListener('change', function () {
+                    renderChartDepartamento(this.checked);
+                });
+
+                const ctxBarrio = document.getElementById('chartBarrio');
+                const chartBarrioObj = new Chart(ctxBarrio, {
+                    type: 'bar',
+                    data: {
+                        labels: datosMetricas.barrios,
+                        datasets: [{ label: 'Cantidad', data: datosMetricas.cantidadesBarrio, backgroundColor: '#20c997' }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                document.getElementById('selectVistaBarrio').addEventListener('change', function () {
+                    const valor = this.value;
+                    document.getElementById('vistaCantidadBarrio').classList.toggle('d-none', valor !== 'cantidad');
+                    document.getElementById('vistaEstadoBarrio').classList.toggle('d-none', valor !== 'estado');
+                    document.getElementById('vistaMotivoBarrio').classList.toggle('d-none', valor !== 'motivo');
+
+                    if (valor === 'cantidad') {
+                        setTimeout(() => chartBarrioObj.resize(), 50);
+                    }
+                });
+
+                const ctxNotificaciones = document.getElementById('chartNotificaciones');
+                const chartNotificacionesObj = new Chart(ctxNotificaciones, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Notificados', 'No notificados'],
+                        datasets: [{
+                            data: [@Model.Notificaciones.Notificados, @Model.Notificaciones.NoNotificados],
+                            backgroundColor: ['#0d6efd', '#dc3545']
+                        }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+
+                let chartTendencia = null;
+                let mesesSeleccionados = [];
+
+                const selectGranularidad = document.getElementById('selectGranularidad');
+                const contenedorAnio = document.getElementById('contenedorSelectorAnio');
+                const contenedorMes = document.getElementById('contenedorSelectorMes');
+
+                selectGranularidad.addEventListener('change', function () {
+                    document.querySelectorAll('.check-anio').forEach(c => c.checked = false);
+                    mesesSeleccionados = [];
+                    actualizarListaMeses();
+
+                    if (this.value === 'anio') {
+                        contenedorAnio.classList.remove('d-none');
+                        contenedorMes.classList.add('d-none');
+                    } else {
+                    contenedorAnio.classList.add('d-none');
+                    contenedorMes.classList.remove('d-none');
                 }
             });
-        }
-        renderChartDepartamento(false);
 
-        document.getElementById('checkSoloPendientesDepto').addEventListener('change', function () {
-            renderChartDepartamento(this.checked);
-        });
-
-        const ctxBarrio = document.getElementById('chartBarrio');
-        const chartBarrioObj = new Chart(ctxBarrio, {
-            type: 'bar',
-            data: {
-                labels: datosMetricas.barrios,
-                datasets: [{ label: 'Cantidad', data: datosMetricas.cantidadesBarrio, backgroundColor: '#20c997' }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-
-        document.getElementById('selectVistaBarrio').addEventListener('change', function () {
-            const valor = this.value;
-            document.getElementById('vistaCantidadBarrio').classList.toggle('d-none', valor !== 'cantidad');
-            document.getElementById('vistaEstadoBarrio').classList.toggle('d-none', valor !== 'estado');
-            document.getElementById('vistaMotivoBarrio').classList.toggle('d-none', valor !== 'motivo');
-
-            if (valor === 'cantidad') {
-                setTimeout(() => chartBarrioObj.resize(), 50);
-            }
-        });
-
-        const ctxNotificaciones = document.getElementById('chartNotificaciones');
-        const chartNotificacionesObj = new Chart(ctxNotificaciones, {
-            type: 'pie',
-            data: {
-                labels: ['Notificados', 'No notificados'],
-                datasets: [{
-                    data: [@Model.Notificaciones.Notificados, @Model.Notificaciones.NoNotificados],
-                    backgroundColor: ['#0d6efd', '#dc3545']
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-        });
-
-        let chartTendencia = null;
-        let mesesSeleccionados = [];
-
-        const selectGranularidad = document.getElementById('selectGranularidad');
-        const contenedorAnio = document.getElementById('contenedorSelectorAnio');
-        const contenedorMes = document.getElementById('contenedorSelectorMes');
-
-        selectGranularidad.addEventListener('change', function () {
-            document.querySelectorAll('.check-anio').forEach(c => c.checked = false);
-            mesesSeleccionados = [];
-            actualizarListaMeses();
-
-            if (this.value === 'anio') {
-                contenedorAnio.classList.remove('d-none');
-                contenedorMes.classList.add('d-none');
-            } else {
-                contenedorAnio.classList.add('d-none');
-                contenedorMes.classList.remove('d-none');
-            }
-        });
-
-        fetch('@Url.Action("ObtenerAnios", "Reclamos")')
+            fetch('@Url.Action("ObtenerAnios", "Reclamos")')
             .then(res => res.json())
             .then(anios => {
                 const contenedor = document.getElementById('listaCheckboxAnios');
@@ -453,52 +455,52 @@
                     const div = document.createElement('div');
                     div.className = 'form-check';
                     div.innerHTML = `
-                        <input class="form-check-input check-anio" type="checkbox" value="${a}" id="anio${a}" ${i === 0 ? 'checked' : ''}>
-                        <label class="form-check-label" for="anio${a}">${a}</label>
+                    <input class="form-check-input check-anio" type="checkbox" value="${a}" id="anio${a}" ${i === 0 ? 'checked' : ''}>
+                    <label class="form-check-label" for="anio${a}">${a}</label>
                     `;
                     contenedor.appendChild(div);
                 });
             });
 
-        document.getElementById('btnAgregarMes').addEventListener('click', function () {
-            const valor = document.getElementById('inputMesEspecifico').value;
-            if (!valor) return;
-            const periodo = valor.replace('-0', '-');
+            document.getElementById('btnAgregarMes').addEventListener('click', function () {
+                const valor = document.getElementById('inputMesEspecifico').value;
+                if (!valor) return;
+                const periodo = valor.replace('-0', '-');
 
-            if (!mesesSeleccionados.includes(periodo)) {
-                mesesSeleccionados.push(periodo);
-                actualizarListaMeses();
-            }
-        });
-
-        function actualizarListaMeses() {
-            const contenedor = document.getElementById('listaMesesSeleccionados');
-            contenedor.innerHTML = '';
-
-            mesesSeleccionados.forEach(periodo => {
-                const [anio, mes] = periodo.split('-');
-                const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                const etiqueta = `${nombresMeses[parseInt(mes) - 1]} ${anio}`;
-
-                const chip = document.createElement('span');
-                chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-2';
-                chip.innerHTML = `${etiqueta} <button type="button" class="btn-close" style="font-size: 0.55rem;"></button>`;
-
-                chip.querySelector('button').addEventListener('click', function () {
-                    mesesSeleccionados = mesesSeleccionados.filter(p => p !== periodo);
+                if (!mesesSeleccionados.includes(periodo)) {
+                    mesesSeleccionados.push(periodo);
                     actualizarListaMeses();
-                });
-
-                contenedor.appendChild(chip);
+                }
             });
-        }
 
-        document.getElementById('btnActualizarTendencia').addEventListener('click', function () {
-            let periodos = [];
+            function actualizarListaMeses() {
+                const contenedor = document.getElementById('listaMesesSeleccionados');
+                contenedor.innerHTML = '';
 
-            if (selectGranularidad.value === 'anio') {
-                periodos = Array.from(document.querySelectorAll('.check-anio:checked')).map(c => c.value);
-            } else {
+                mesesSeleccionados.forEach(periodo => {
+                    const [anio, mes] = periodo.split('-');
+                    const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                    const etiqueta = `${nombresMeses[parseInt(mes) - 1]} ${anio}`;
+
+                    const chip = document.createElement('span');
+                    chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-2';
+                    chip.innerHTML = `${etiqueta} <button type="button" class="btn-close" style="font-size: 0.55rem;"></button>`;
+
+                    chip.querySelector('button').addEventListener('click', function () {
+                        mesesSeleccionados = mesesSeleccionados.filter(p => p !== periodo);
+                        actualizarListaMeses();
+                    });
+
+                    contenedor.appendChild(chip);
+                });
+            }
+
+            document.getElementById('btnActualizarTendencia').addEventListener('click', function () {
+                let periodos = [];
+
+                if (selectGranularidad.value === 'anio') {
+                    periodos = Array.from(document.querySelectorAll('.check-anio:checked')).map(c => c.value);
+                } else {
                 periodos = mesesSeleccionados;
             }
 
@@ -508,40 +510,40 @@
             }
 
             fetch('@Url.Action("ObtenerTendencia", "Reclamos")?periodos=' + encodeURIComponent(periodos.join(',')))
-                .then(res => res.json())
-                .then(data => {
-                    const colores = ['#0d6efd', '#dc3545', '#198754', '#fd7e14', '#6f42c1', '#20c997'];
+            .then(res => res.json())
+            .then(data => {
+                const colores = ['#0d6efd', '#dc3545', '#198754', '#fd7e14', '#6f42c1', '#20c997'];
 
-                    if (chartTendencia) chartTendencia.destroy();
+                if (chartTendencia) chartTendencia.destroy();
 
-                    const ctx = document.getElementById('chartTendencia');
-                    chartTendencia = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: data.series.map((s, i) => ({
-                                label: s.nombre,
-                                data: s.datos,
-                                borderColor: colores[i % colores.length],
-                                backgroundColor: colores[i % colores.length],
-                                tension: 0.2,
-                                fill: false
-                            }))
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: { legend: { position: 'bottom' } },
-                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                        }
-                    });
+                const ctx = document.getElementById('chartTendencia');
+                chartTendencia = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: data.series.map((s, i) => ({
+                            label: s.nombre,
+                            data: s.datos,
+                            borderColor: colores[i % colores.length],
+                            backgroundColor: colores[i % colores.length],
+                            tension: 0.2,
+                            fill: false
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
                 });
+            });
         });
 
         document.querySelectorAll('#tabsMetricas button').forEach(function (btn) {
             btn.addEventListener('shown.bs.tab', function () {
                 setTimeout(function () {
                     [chartResumenObj, chartMotivoObj, chartDepartamentoActual, chartBarrioObj, chartNotificacionesObj]
-                        .forEach(c => { if (c) c.resize(); });
+                    .forEach(c => { if (c) c.resize(); });
                 }, 50);
             });
         });

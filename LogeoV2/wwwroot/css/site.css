@@ -218,3 +218,51 @@ body {
     [data-tema="oscuro"] .dropdown-item-text .text-muted {
         color: #cccccc !important;
     }
+/* ===== Color de marca en modo claro (reemplaza el azul default de Bootstrap) ===== */
+.btn-primary {
+    background-color: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #e26e0f !important;
+        border-color: #e26e0f !important;
+    }
+
+.btn-outline-primary {
+    color: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #fd7e14 !important;
+        border-color: #fd7e14 !important;
+        color: #fff !important;
+    }
+
+a, .dropdown-item.active, .nav-tabs .nav-link.active {
+    color: #212529;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(253, 126, 20, 0.1);
+}
+
+.nav-tabs .nav-link.active {
+    border-top: 2px solid #fd7e14;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #fd7e14 !important;
+    box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.2) !important;
+}
+
+.badge.bg-primary {
+    background-color: #fd7e14 !important;
+}
+
+.spinner-border {
+    color: #fd7e14 !important;
+}

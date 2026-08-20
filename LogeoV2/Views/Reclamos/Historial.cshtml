@@ -6,54 +6,68 @@
 
 <h1>Historial de Reclamos</h1>
 
-<form method="get" asp-action="Historial" class="row g-2 mb-3 align-items-end">
-    <div class="col-auto">
-        <label class="form-label mb-1">Buscar (DNI / vecino)</label>
-        <input type="text" name="busqueda" value="@Model.Busqueda" class="form-control" />
-    </div>
-    <div class="col-auto">
-        <label class="form-label mb-1">Estado</label>
-        <select name="estado" class="form-select">
-            <option value="">Todos</option>
-            @foreach (var e in Model.EstadosDisponibles)
-            {
-                <option value="@e" selected="@(Model.Estado == e)">@e</option>
-            }
-        </select>
-    </div>
-    <div class="col-auto">
-        <label class="form-label mb-1">Categoría</label>
-        <select name="idCategoria" class="form-select">
-            <option value="">Todas</option>
-            @foreach (var c in Model.Categorias)
-            {
-                <option value="@c.IdCategoria" selected="@(Model.IdCategoria == c.IdCategoria)">@c.Nombre</option>
-            }
-        </select>
-    </div>
-    <div class="col-auto">
-        <label class="form-label mb-1">Barrio</label>
-        <select name="idBarrio" class="form-select">
-            <option value="">Todos</option>
-            @foreach (var b in Model.Barrios)
-            {
-                <option value="@b.IdBarrio" selected="@(Model.IdBarrio == b.IdBarrio)">@b.Nombre</option>
-            }
-        </select>
-    </div>
-    <div class="col-auto">
-        <label class="form-label mb-1">Desde</label>
-        <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
-    </div>
-    <div class="col-auto">
-        <label class="form-label mb-1">Hasta</label>
-        <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Filtrar</button>
+<form method="get" asp-action="Historial" class="mb-2">
+    <div class="d-flex align-items-center gap-2">
+        <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
+            <input type="text" name="busqueda" value="@Model.Busqueda"
+                   class="form-control border-0 ps-4" placeholder="Buscar por DNI o vecino"
+                   style="box-shadow: none;" />
+            <button type="submit" class="btn btn-light border-0 px-3">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+
+        <div class="dropdown ms-auto">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                    type="button" id="dropdownFiltrosHistorial" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-sliders"></i> Filtros
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 300px;" aria-labelledby="dropdownFiltrosHistorial">
+                <div class="mb-2">
+                    <label class="form-label mb-1">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var e in Model.EstadosDisponibles)
+                        {
+                            <option value="@e" selected="@(Model.Estado == e)">@e</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label mb-1">Categoría</label>
+                    <select name="idCategoria" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var c in Model.Categorias)
+                        {
+                            <option value="@c.IdCategoria" selected="@(Model.IdCategoria == c.IdCategoria)">@c.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label mb-1">Barrio</label>
+                    <select name="idBarrio" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var b in Model.Barrios)
+                        {
+                            <option value="@b.IdBarrio" selected="@(Model.IdBarrio == b.IdBarrio)">@b.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label mb-1">Desde</label>
+                        <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label mb-1">Hasta</label>
+                        <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
+            </div>
+        </div>
     </div>
 </form>
-
 <div class="d-flex justify-content-end mb-3">
     <div class="dropdown">
         <button class="btn btn-outline-secondary dropdown-toggle" type="button"
