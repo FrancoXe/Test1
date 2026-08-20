@@ -1,6 +1,7 @@
 ﻿@model LogeoV2.ViewModels.MetricasReclamosVM
 @{
     ViewData["Title"] = "Reportes";
+    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Reportes", null) };
     var categoriasJson = System.Text.Json.JsonSerializer.Serialize(Model.PorCategoria.Select(c => c.Nombre));
     var cantidadesJson = System.Text.Json.JsonSerializer.Serialize(Model.PorCategoria.Select(c => c.Cantidad));
     var departamentosJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamento.Select(d => d.Nombre));

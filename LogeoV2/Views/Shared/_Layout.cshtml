@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-tema="claro">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,6 +74,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" id="btnModoOscuro" title="Cambiar tema">
+                                <i class="bi bi-moon-stars fs-5" id="iconoModoOscuro"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Acceso" asp-action="Logout" title="Cerrar sesión">
                                 <i class="bi bi-box-arrow-right fs-5"></i>
                             </a>
@@ -83,6 +88,34 @@
             </div>
         </nav>
     </header>
+
+    @if (ViewData["Breadcrumb"] != null)
+    {
+        var items = ((List<(string Texto, string? Url)>)ViewData["Breadcrumb"]!);
+        <nav aria-label="breadcrumb" class="container mt-2">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                        <i class="bi bi-house-door"></i>
+                    </a>
+                </li>
+                @for (int i = 0; i < items.Count; i++)
+                {
+                    if (i == items.Count - 1)
+                    {
+                        <li class="breadcrumb-item active" aria-current="page">@items[i].Texto</li>
+                    }
+                    else
+                    {
+                        <li class="breadcrumb-item">
+                            <a href="@items[i].Url" class="text-decoration-none">@items[i].Texto</a>
+                        </li>
+                    }
+                }
+            </ol>
+        </nav>
+    }
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -104,9 +137,36 @@
         </div>
     </div>
 
+    <partial name="_ModalAyuda" />
+
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+    <script>
+        const html = document.documentElement;
+        const iconoModo = document.getElementById('iconoModoOscuro');
+
+        function aplicarTema(tema) {
+            html.setAttribute('data-tema', tema);
+            if (iconoModo) {
+                iconoModo.classList.toggle('bi-moon-stars', tema === 'claro');
+                iconoModo.classList.toggle('bi-sun', tema === 'oscuro');
+            }
+        }
+
+        const temaGuardado = localStorage.getItem('tema') || 'claro';
+        aplicarTema(temaGuardado);
+
+        document.getElementById('btnModoOscuro')?.addEventListener('click', function () {
+            const temaActual = html.getAttribute('data-tema');
+            const nuevoTema = temaActual === 'claro' ? 'oscuro' : 'claro';
+            aplicarTema(nuevoTema);
+            localStorage.setItem('tema', nuevoTema);
+        });
+    </script>
 
     <script>
         const modalReclamo = document.getElementById('modalReclamo');
@@ -203,6 +263,5 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
-    <partial name="_ModalAyuda" />
 </body>
 </html>

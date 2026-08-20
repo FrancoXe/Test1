@@ -20,3 +20,201 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* ===== MODO OSCURO ===== */
+
+:root {
+    --color-fondo: #ffffff;
+    --color-texto: #212529;
+    --color-navbar: #ffffff;
+    --color-borde: #dee2e6;
+    --color-tarjeta: #ffffff;
+    --color-acento: #fd7e14;
+    --color-tab-activa-fondo: #ffffff;
+    --color-tab-activa-texto: #212529;
+    --color-input-fondo: #ffffff;
+}
+
+[data-tema="oscuro"] {
+    --color-fondo: #1a1a1a;
+    --color-texto: #f1f1f1;
+    --color-navbar: #000000;
+    --color-borde: #fd7e14;
+    --color-tarjeta: #2a2a2a;
+    --color-acento: #fd7e14;
+    --color-tab-activa-fondo: #fd7e14;
+    --color-tab-activa-texto: #000000;
+    --color-input-fondo: #2a2a2a;
+}
+
+body {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-tema="oscuro"] .navbar {
+    background-color: var(--color-navbar) !important;
+    border-bottom: 2px solid var(--color-acento) !important;
+}
+
+[data-tema="oscuro"] .nav-link,
+[data-tema="oscuro"] .navbar-brand {
+    color: var(--color-texto) !important;
+}
+
+    [data-tema="oscuro"] .nav-link:hover {
+        color: var(--color-acento) !important;
+    }
+
+[data-tema="oscuro"] .card,
+[data-tema="oscuro"] .table {
+    background-color: var(--color-tarjeta) !important;
+    color: var(--color-texto) !important;
+    border-color: var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(253, 126, 20, 0.08) !important;
+    color: var(--color-texto) !important;
+}
+
+[data-tema="oscuro"] .form-control,
+[data-tema="oscuro"] .form-select {
+    background-color: var(--color-input-fondo) !important;
+    color: var(--color-texto) !important;
+    border-color: #444 !important;
+}
+
+[data-tema="oscuro"] .text-dark {
+    color: var(--color-texto) !important;
+}
+
+[data-tema="oscuro"] .btn-outline-secondary {
+    color: var(--color-texto) !important;
+    border-color: var(--color-acento) !important;
+}
+
+    [data-tema="oscuro"] .btn-outline-secondary:hover {
+        background-color: var(--color-acento) !important;
+        color: #000 !important;
+    }
+
+[data-tema="oscuro"] .btn-primary {
+    background-color: var(--color-acento) !important;
+    border-color: var(--color-acento) !important;
+    color: #000 !important;
+}
+
+/* Pestañas (nav-tabs) */
+[data-tema="oscuro"] .nav-tabs {
+    border-bottom-color: var(--color-borde) !important;
+}
+
+    [data-tema="oscuro"] .nav-tabs .nav-link {
+        color: var(--color-texto) !important;
+        border-color: transparent !important;
+    }
+
+        [data-tema="oscuro"] .nav-tabs .nav-link.active {
+            background-color: var(--color-tab-activa-fondo) !important;
+            color: var(--color-tab-activa-texto) !important;
+            border-color: var(--color-acento) var(--color-acento) var(--color-tab-activa-fondo) !important;
+            font-weight: 600;
+        }
+
+.nav-tabs .nav-link.active {
+    color: var(--color-tab-activa-texto);
+}
+
+/* Breadcrumb */
+[data-tema="oscuro"] .breadcrumb-item a {
+    color: var(--color-acento) !important;
+}
+
+[data-tema="oscuro"] .breadcrumb-item.active {
+    color: var(--color-texto) !important;
+}
+
+[data-tema="oscuro"] .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--color-texto) !important;
+}
+
+/* ===== MODALES — uniformes entre sí ===== */
+
+[data-tema="oscuro"] .modal-content {
+    background-color: var(--color-tarjeta) !important;
+    color: var(--color-texto) !important;
+    border: 1px solid var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .modal-header {
+    background-color: var(--color-tarjeta) !important;
+    border-bottom: 1px solid var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .modal-footer {
+    background-color: var(--color-tarjeta) !important;
+    border-top: 1px solid var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .modal-title {
+    color: var(--color-texto) !important;
+}
+
+[data-tema="oscuro"] .modal-body {
+    color: var(--color-texto) !important;
+}
+
+[data-tema="oscuro"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Acordeón (modal de Ayuda) */
+[data-tema="oscuro"] .accordion-item {
+    background-color: var(--color-tarjeta) !important;
+    border-color: var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .accordion-button {
+    background-color: var(--color-tarjeta) !important;
+    color: var(--color-texto) !important;
+}
+
+    [data-tema="oscuro"] .accordion-button:not(.collapsed) {
+        background-color: rgba(253, 126, 20, 0.15) !important;
+        color: var(--color-acento) !important;
+        box-shadow: none !important;
+    }
+
+    [data-tema="oscuro"] .accordion-button::after {
+        filter: invert(1) brightness(1.5);
+    }
+
+/* Dropdowns (Notificaciones, Filtros, Exportar) */
+[data-tema="oscuro"] .dropdown-menu {
+    background-color: var(--color-tarjeta) !important;
+    color: var(--color-texto) !important;
+    border-color: var(--color-borde) !important;
+}
+
+[data-tema="oscuro"] .dropdown-item {
+    color: var(--color-texto) !important;
+}
+
+    [data-tema="oscuro"] .dropdown-item:hover {
+        background-color: rgba(253, 126, 20, 0.15) !important;
+        color: var(--color-acento) !important;
+    }
+[data-tema="oscuro"] .dropdown-item-text {
+    color: var(--color-texto) !important;
+}
+
+    [data-tema="oscuro"] .dropdown-item-text.bg-light {
+        background-color: rgba(253, 126, 20, 0.12) !important;
+    }
+
+    [data-tema="oscuro"] .dropdown-item-text .small,
+    [data-tema="oscuro"] .dropdown-item-text .text-muted {
+        color: #cccccc !important;
+    }

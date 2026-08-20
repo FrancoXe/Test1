@@ -71,6 +71,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+app.UseStatusCodePagesWithReExecute("/Home/ErrorPagina/{0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

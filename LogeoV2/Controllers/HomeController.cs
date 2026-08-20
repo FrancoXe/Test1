@@ -28,5 +28,12 @@ namespace LogeoV2.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [Route("Home/ErrorPagina/{codigo}")]
+        public IActionResult ErrorPagina(int codigo)
+        {
+            ViewData["Codigo"] = codigo;
+            return View("ErrorPagina");
+        }
     }
 }

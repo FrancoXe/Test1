@@ -1,0 +1,28 @@
+﻿@{
+    var codigo = ViewData["Codigo"]?.ToString() ?? "Error";
+    var titulo = codigo switch
+    {
+        "404" => "Página no encontrada",
+        "403" => "Acceso denegado",
+        "500" => "Error interno del servidor",
+        _ => "Ocurrió un error"
+    };
+    var mensaje = codigo switch
+    {
+        "404" => "La página que buscás no existe o fue movida.",
+        "403" => "No tenés permisos para acceder a esta sección.",
+        "500" => "Algo salió mal de nuestro lado. Ya estamos trabajando en solucionarlo.",
+        _ => "Ocurrió un problema inesperado."
+    };
+    ViewData["Title"] = titulo;
+}
+
+<div class="text-center py-5">
+    <img src="~/img/logo-navbar.png" alt="Municipalidad de Unquillo" style="height: 80px;" class="mb-4 opacity-50" />
+    <h1 class="display-4 fw-bold" style="color: var(--color-acento, #fd7e14);">@codigo</h1>
+    <h3 class="mb-3">@titulo</h3>
+    <p class="text-muted mb-4">@mensaje</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+        <i class="bi bi-house-door me-1"></i> Volver al inicio
+    </a>
+</div>
