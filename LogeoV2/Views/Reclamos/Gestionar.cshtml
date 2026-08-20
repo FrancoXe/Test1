@@ -23,62 +23,119 @@
     </div>
 </form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Vecino</th>
-            <th>Categoría</th>
-            <th>Subcategoría</th>
-            <th>Barrio</th>
-            <th>Dirección</th>
-            <th>Descripción</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Departamento Asignado</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var r in Model.Reclamos)
-        {
-            <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
-                <td>@r.IdReclamo</td>
-                <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
-                <td>@r.Categoria?.Nombre</td>
-                <td>@r.Subcategoria?.Nombre</td>
-                <td>@r.Barrio?.Nombre</td>
-                <td>@r.Direccion</td>
-                <td>@r.Descripcion</td>
-                <td>@r.FechaCreacion.ToString("g")</td>
-                <td>
-                    <select class="form-select form-select-sm select-estado">
-                        @foreach (var e in Model.EstadosDisponibles)
-                        {
-                            <option value="@e" selected="@(e == r.Estado)">@e</option>
-                        }
-                    </select>
-                </td>
-                <td>@(r.DepartamentoAsignado?.Nombre ?? "—")</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
-                            style="width: 32px; height: 32px; padding: 0;"
-                            title="Ver más"
-                            onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<ul class="nav nav-tabs mb-3" id="tabsGestion" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabActivos" type="button">Activos</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabVencidos" type="button">
+            Vencidos
+            @if (Model.ReclamosVencidos.Any())
+            {
+                <span class="badge bg-danger ms-1">@Model.ReclamosVencidos.Count</span>
+            }
+        </button>
+    </li>
+</ul>
 
-<button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tabActivos">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Vecino</th>
+                    <th>Categoría</th>
+                    <th>Subcategoría</th>
+                    <th>Barrio</th>
+                    <th>Dirección</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Departamento Asignado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Reclamos)
+                {
+                    <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
+                        <td>@r.IdReclamo</td>
+                        <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                        <td>@r.Categoria?.Nombre</td>
+                        <td>@r.Subcategoria?.Nombre</td>
+                        <td>@r.Barrio?.Nombre</td>
+                        <td>@r.Direccion</td>
+                        <td>@r.Descripcion</td>
+                        <td>@r.FechaCreacion.ToString("g")</td>
+                        <td>
+                            <select class="form-select form-select-sm select-estado">
+                                @foreach (var e in Model.EstadosDisponibles)
+                                {
+                                    <option value="@e" selected="@(e == r.Estado)">@e</option>
+                                }
+                            </select>
+                        </td>
+                        <td>@(r.DepartamentoAsignado?.Nombre ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+    </div>
+
+    <div class="tab-pane fade" id="tabVencidos">
+        @if (!Model.ReclamosVencidos.Any())
+        {
+            <p class="text-muted">No hay reclamos vencidos (pendientes hace más de 7 días).</p>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Vecino</th>
+                        <th>Categoría</th>
+                        <th>Barrio</th>
+                        <th>Descripción</th>
+                        <th>Días pendiente</th>
+                        <th>Cambiar Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.ReclamosVencidos)
+                    {
+                        var dias = (DateTime.UtcNow - r.FechaCreacion).Days;
+                        <tr class="table-warning" data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
+                            <td>@r.IdReclamo</td>
+                            <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                            <td>@r.Categoria?.Nombre</td>
+                            <td>@r.Barrio?.Nombre</td>
+                            <td>@r.Descripcion</td>
+                            <td><span class="badge bg-danger">@dias días</span></td>
+                            <td>
+                                <select class="form-select form-select-sm select-estado">
+                                    @foreach (var e in Model.EstadosDisponibles)
+                                    {
+                                        <option value="@e" selected="@(e == r.Estado)">@e</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <button type="button" id="btnGuardarCambiosVencidos" class="btn btn-primary">Guardar cambios</button>
+        }
+    </div>
+</div>
 
 @section Scripts {
     <script>
-        document.getElementById('btnGuardarCambios').addEventListener('click', async function () {
-            const filas = document.querySelectorAll('tr[data-id-reclamo]');
+        function recolectarCambios(selectorFilas) {
+            const filas = document.querySelectorAll(selectorFilas);
             const cambios = [];
 
             filas.forEach(fila => {
@@ -91,12 +148,15 @@
                 }
             });
 
+            return cambios;
+        }
+
+        async function guardarCambios(cambios, boton) {
             if (cambios.length === 0) {
                 alert('No hay cambios para guardar.');
                 return;
             }
 
-            const boton = document.getElementById('btnGuardarCambios');
             boton.disabled = true;
             boton.textContent = 'Guardando...';
 
@@ -114,6 +174,20 @@
             }
 
             location.reload();
-        });
+        }
+
+        const btnActivos = document.getElementById('btnGuardarCambios');
+        if (btnActivos) {
+            btnActivos.addEventListener('click', function () {
+                guardarCambios(recolectarCambios('#tabActivos tr[data-id-reclamo]'), btnActivos);
+            });
+        }
+
+        const btnVencidos = document.getElementById('btnGuardarCambiosVencidos');
+        if (btnVencidos) {
+            btnVencidos.addEventListener('click', function () {
+                guardarCambios(recolectarCambios('#tabVencidos tr[data-id-reclamo]'), btnVencidos);
+            });
+        }
     </script>
 }

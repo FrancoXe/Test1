@@ -16,5 +16,7 @@ namespace LogeoV2.Services
         Task<MetricasReclamosVM> ObtenerMetricas(DateTime? desde, DateTime? hasta);
         Task<List<int>> ObtenerAniosDisponibles();
         Task<TendenciaVM> ObtenerTendencia(List<string> periodos);
+
+        Task<List<Reclamo>> ObtenerReclamosVencidos();
     }
 }

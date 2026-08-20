@@ -1,6 +1,4 @@
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
-
 @{
     ViewData["Title"] = "Página Principal";
 }
@@ -8,16 +6,8 @@
 @if (User.Identity!.IsAuthenticated)
 {
     var nombreCompleto = $"{User.FindFirst(ClaimTypes.Name)?.Value} {User.FindFirst(ClaimTypes.Surname)?.Value}";
-    <h1 class="display-4">Bienvenido, @nombreCompleto</h1>
-}
-
-<div class="text-center">
-    <p>Aprende sobre <a href="https://learn.microsoft.com/aspnet/core">construcción de aplicaciones web con ASP.NET Core</a>.</p>
-</div>
-
-@if (User.Identity.IsAuthenticated)
-{
-    <div>
-        <a asp-controller="Acceso" asp-action="Logout" class="btn btn-danger">Cerrar Sesión</a>
+    <div class="text-center py-5">
+        <h1 class="display-4">Bienvenido, @nombreCompleto</h1>
+        <p class="text-muted fs-5">Sistema de Gestión de Reclamos — Municipalidad de Unquillo</p>
     </div>
 }

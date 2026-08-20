@@ -99,9 +99,12 @@ namespace LogeoV2.Controllers
         public async Task<IActionResult> Gestionar(string? estado)
         {
             var reclamos = await _reclamoService.ObtenerReclamos(estado);
+            var vencidos = await _reclamoService.ObtenerReclamosVencidos();
+
             var viewModel = new GestionReclamosVM
             {
                 Reclamos = reclamos,
+                ReclamosVencidos = vencidos,
                 Estado = estado
             };
             return View(viewModel);

@@ -331,5 +331,20 @@ namespace LogeoV2.Services
 
             return vm;
         }
+
+        public async Task<List<Reclamo>> ObtenerReclamosVencidos()
+        {
+            var limite = DateTime.UtcNow.AddDays(-7);
+
+            return await _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Include(r => r.DepartamentoAsignado)
+                .Where(r => r.Estado == "Pendiente" && r.FechaCreacion <= limite)
+                .OrderBy(r => r.FechaCreacion)
+                .ToListAsync();
+        }
     }
 }

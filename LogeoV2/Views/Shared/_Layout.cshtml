@@ -13,7 +13,9 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LogeoV2</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/logo-navbar.png" alt="Municipalidad de Unquillo" style="height: 40px;" />
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,29 +23,8 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        @if (User.IsInRole("Administrador"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Administracion" asp-action="Usuarios">Usuarios</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Gestionar">Gestionar Reclamos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial de Reclamos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Metricas">Métricas</a>
-                            </li>
-                        }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" id="btnNuevoReclamo" data-bs-toggle="modal" data-bs-target="#modalReclamo">
-                                Nuevo Reclamo
+                            <a class="nav-link text-dark fs-5" href="#" id="btnNuevoReclamo" data-bs-toggle="modal" data-bs-target="#modalReclamo" title="Nuevo Reclamo">
+                                <i class="bi bi-plus-circle"></i>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -55,11 +36,30 @@
                                 <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="MisReclamosDepartamento">Mis Reclamos (Depto.)</a>
                             </li>
                         }
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Administracion" asp-action="Usuarios">Usuarios</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Historial">Historial</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Gestionar">Gestionar Reclamos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Reclamos" asp-action="Metricas">Reportes</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav align-items-center">
                         <li class="nav-item dropdown">
-                            <a class="nav-link text-dark position-relative" href="#" id="dropdownNotificaciones"
-                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell"></i>
-                                <span id="badgeNotificaciones" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle d-none">
+                            <a class="nav-link text-dark position-relative d-inline-flex" href="#" id="dropdownNotificaciones"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
+                                <i class="bi bi-bell fs-5"></i>
+                                <span id="badgeNotificaciones" class="badge rounded-pill bg-danger position-absolute d-none"
+                                      style="top: -2px; right: -6px; font-size: 0.6rem;">
                                     0
                                 </span>
                             </a>
@@ -67,6 +67,16 @@
                                  aria-labelledby="dropdownNotificaciones" id="listaNotificaciones">
                                 <div class="text-center text-muted py-3">Cargando...</div>
                             </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" data-bs-toggle="modal" data-bs-target="#modalAyuda" title="Ayuda">
+                                <i class="bi bi-question-circle fs-5"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Acceso" asp-action="Logout" title="Cerrar sesión">
+                                <i class="bi bi-box-arrow-right fs-5"></i>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -193,5 +203,6 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <partial name="_ModalAyuda" />
 </body>
 </html>
