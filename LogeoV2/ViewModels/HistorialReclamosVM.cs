@@ -18,5 +18,8 @@ namespace LogeoV2.ViewModels
         public DateTime? FechaDesde { get; set; }
         public DateTime? FechaHasta { get; set; }
         public string? Busqueda { get; set; }
+
+        public int PaginaActual { get; set; } = 1;
+        public int TotalPaginas { get; set; } = 1;
     }
 }

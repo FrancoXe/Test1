@@ -1,7 +1,6 @@
 ﻿@model LogeoV2.ViewModels.HistorialReclamosVM
 @{
     ViewData["Title"] = "Historial de Reclamos";
-    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Historial", null) };
 }
 
 <h1>Historial de Reclamos</h1>
@@ -68,6 +67,7 @@
         </div>
     </div>
 </form>
+
 <div class="d-flex justify-content-end mb-3">
     <div class="dropdown">
         <button class="btn btn-outline-secondary dropdown-toggle" type="button"
@@ -116,7 +116,6 @@
             <th>Descripción</th>
             <th>Fecha</th>
             <th>Estado</th>
-            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -133,15 +132,21 @@
                 <td>@r.Descripcion</td>
                 <td>@r.FechaCreacion.ToString("g")</td>
                 <td>@r.Estado</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
-                            style="width: 32px; height: 32px; padding: 0;"
-                            title="Ver más"
-                            onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                </td>
             </tr>
         }
     </tbody>
 </table>
+
+<partial name="_Paginacion" model="@(new LogeoV2.ViewModels.PaginacionParams {
+    PaginaActual = Model.PaginaActual,
+    TotalPaginas = Model.TotalPaginas,
+    AccionUrl = Url.Action("Historial", "Reclamos") ?? "",
+    ParametrosExtra = new Dictionary<string, string?> {
+        { "estado", Model.Estado },
+        { "idCategoria", Model.IdCategoria?.ToString() },
+        { "idBarrio", Model.IdBarrio?.ToString() },
+        { "fechaDesde", Model.FechaDesde?.ToString("yyyy-MM-dd") },
+        { "fechaHasta", Model.FechaHasta?.ToString("yyyy-MM-dd") },
+        { "busqueda", Model.Busqueda }
+    }
+})" />

@@ -9,6 +9,9 @@ namespace LogeoV2.ViewModels
         public List<Reclamo> ReclamosVencidos { get; set; } = new();
 
         public string? Busqueda { get; set; }
+
+        public int PaginaActual { get; set; } = 1;
+        public int TotalPaginas { get; set; } = 1;
         public List<string> EstadosDisponibles { get; set; } = new()
         {
             "Pendiente", "Aceptado", "Rechazado", "En Proceso", "Resuelto"

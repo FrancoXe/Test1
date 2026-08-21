@@ -354,5 +354,93 @@ namespace LogeoV2.Services
                 .OrderBy(r => r.FechaCreacion)
                 .ToListAsync();
         }
+        public async Task<ResultadoPaginado<Reclamo>> ObtenerReclamos(string? estado, string? busqueda, int pagina = 1, int tamanioPagina = 20)
+        {
+            var query = _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Include(r => r.DepartamentoAsignado)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estado))
+                query = query.Where(r => r.Estado == estado);
+
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var termino = busqueda.Trim().ToLower();
+                query = query.Where(r =>
+                    r.Usuario!.Nombre.ToLower().Contains(termino) ||
+                    r.Usuario!.Apellido.ToLower().Contains(termino));
+            }
+
+            query = query.OrderByDescending(r => r.FechaCreacion);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * tamanioPagina)
+                .Take(tamanioPagina)
+                .ToListAsync();
+
+            return new ResultadoPaginado<Reclamo>
+            {
+                Items = items,
+                PaginaActual = pagina,
+                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
+                TotalRegistros = total
+            };
+        }
+
+        public async Task<ResultadoPaginado<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda, int pagina = 1, int tamanioPagina = 20)
+        {
+            var query = _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Include(r => r.DepartamentoAsignado)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estado))
+                query = query.Where(r => r.Estado == estado);
+
+            if (idCategoria.HasValue)
+                query = query.Where(r => r.IdCategoria == idCategoria.Value);
+
+            if (idBarrio.HasValue)
+                query = query.Where(r => r.IdBarrio == idBarrio.Value);
+
+            if (fechaDesde.HasValue)
+                query = query.Where(r => r.FechaCreacion >= fechaDesde.Value);
+
+            if (fechaHasta.HasValue)
+                query = query.Where(r => r.FechaCreacion <= fechaHasta.Value.AddDays(1).AddTicks(-1));
+
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var termino = busqueda.Trim().ToLower();
+                query = query.Where(r =>
+                    r.DNI.ToLower().Contains(termino) ||
+                    r.Usuario!.Nombre.ToLower().Contains(termino) ||
+                    r.Usuario!.Apellido.ToLower().Contains(termino));
+            }
+
+            query = query.OrderByDescending(r => r.FechaCreacion);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * tamanioPagina)
+                .Take(tamanioPagina)
+                .ToListAsync();
+
+            return new ResultadoPaginado<Reclamo>
+            {
+                Items = items,
+                PaginaActual = pagina,
+                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
+                TotalRegistros = total
+            };
+        }
     }
 }

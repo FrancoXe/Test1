@@ -96,17 +96,19 @@ namespace LogeoV2.Controllers
 
         [Authorize(Roles = "Administrador")]
         [HttpGet]
-        public async Task<IActionResult> Gestionar(string? estado, string? busqueda)
+        public async Task<IActionResult> Gestionar(string? estado, string? busqueda, int pagina = 1)
         {
-            var reclamos = await _reclamoService.ObtenerReclamos(estado, busqueda);
+            var resultado = await _reclamoService.ObtenerReclamos(estado, busqueda, pagina);
             var vencidos = await _reclamoService.ObtenerReclamosVencidos();
 
             var viewModel = new GestionReclamosVM
             {
-                Reclamos = reclamos,
+                Reclamos = resultado.Items,
                 ReclamosVencidos = vencidos,
                 Estado = estado,
-                Busqueda = busqueda
+                Busqueda = busqueda,
+                PaginaActual = resultado.PaginaActual,
+                TotalPaginas = resultado.TotalPaginas
             };
             return View(viewModel);
         }
@@ -121,13 +123,13 @@ namespace LogeoV2.Controllers
 
         [Authorize(Roles = "Administrador")]
         [HttpGet]
-        public async Task<IActionResult> Historial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda)
+        public async Task<IActionResult> Historial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda, int pagina = 1)
         {
-            var reclamos = await _reclamoService.ObtenerHistorial(estado, idCategoria, idBarrio, fechaDesde, fechaHasta, busqueda);
+            var resultado = await _reclamoService.ObtenerHistorial(estado, idCategoria, idBarrio, fechaDesde, fechaHasta, busqueda, pagina);
 
             var viewModel = new HistorialReclamosVM
             {
-                Reclamos = reclamos,
+                Reclamos = resultado.Items,
                 Categorias = await _reclamoService.ObtenerCategorias(),
                 Barrios = await _reclamoService.ObtenerBarrios(),
                 Estado = estado,
@@ -135,7 +137,9 @@ namespace LogeoV2.Controllers
                 IdBarrio = idBarrio,
                 FechaDesde = fechaDesde,
                 FechaHasta = fechaHasta,
-                Busqueda = busqueda
+                Busqueda = busqueda,
+                PaginaActual = resultado.PaginaActual,
+                TotalPaginas = resultado.TotalPaginas
             };
 
             return View(viewModel);
@@ -145,22 +149,22 @@ namespace LogeoV2.Controllers
         [HttpGet]
         public async Task<IActionResult> ExportarHistorial(string formato, string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda)
         {
-            var reclamos = await _reclamoService.ObtenerHistorial(estado, idCategoria, idBarrio, fechaDesde, fechaHasta, busqueda);
+            var resultado = await _reclamoService.ObtenerHistorial(estado, idCategoria, idBarrio, fechaDesde, fechaHasta, busqueda, pagina: 1, tamanioPagina: int.MaxValue);
 
             var encabezados = new List<string> { "ID", "DNI", "Vecino", "Categoría", "Subcategoría", "Barrio", "Dirección", "Descripción", "Fecha", "Estado" };
-            var filas = reclamos.Select(r => new List<string>
-            {
-                r.IdReclamo.ToString(),
-                r.DNI,
-                $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
-                r.Categoria?.Nombre ?? "",
-                r.Subcategoria?.Nombre ?? "",
-                r.Barrio?.Nombre ?? "",
-                r.Direccion,
-                r.Descripcion,
-                r.FechaCreacion.ToString("g"),
-                r.Estado
-            }).ToList();
+            var filas = resultado.Items.Select(r => new List<string>
+    {
+        r.IdReclamo.ToString(),
+        r.DNI,
+        $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
+        r.Categoria?.Nombre ?? "",
+        r.Subcategoria?.Nombre ?? "",
+        r.Barrio?.Nombre ?? "",
+        r.Direccion,
+        r.Descripcion,
+        r.FechaCreacion.ToString("g"),
+        r.Estado
+    }).ToList();
 
             var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
 

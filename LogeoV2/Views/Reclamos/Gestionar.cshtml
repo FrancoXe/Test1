@@ -1,7 +1,6 @@
 ﻿@model LogeoV2.ViewModels.GestionReclamosVM
 @{
     ViewData["Title"] = "Gestionar Reclamos";
-    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Gestionar Reclamos", null) };
 }
 
 <h1>Gestionar Reclamos</h1>
@@ -101,6 +100,13 @@
                 }
             </tbody>
         </table>
+
+        <partial name="_Paginacion" model="@(new LogeoV2.ViewModels.PaginacionParams {
+            PaginaActual = Model.PaginaActual,
+            TotalPaginas = Model.TotalPaginas,
+            AccionUrl = Url.Action("Gestionar", "Reclamos") ?? "",
+            ParametrosExtra = new Dictionary<string, string?> { { "estado", Model.Estado }, { "busqueda", Model.Busqueda } }
+        })" />
 
         <button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
     </div>

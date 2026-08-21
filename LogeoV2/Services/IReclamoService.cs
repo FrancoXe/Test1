@@ -9,9 +9,9 @@ namespace LogeoV2.Services
         Task<List<Categoria>> ObtenerCategorias();
         Task<List<Subcategoria>> ObtenerSubcategorias(int idCategoria);
         Task<List<Barrio>> ObtenerBarrios();
-        Task<List<Reclamo>> ObtenerReclamos(string? estado, string? busqueda = null);
+        Task<ResultadoPaginado<Reclamo>> ObtenerReclamos(string? estado, string? busqueda, int pagina = 1, int tamanioPagina = 20);
         Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, bool notificar = true);
-        Task<List<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda);
+        Task<ResultadoPaginado<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda, int pagina = 1, int tamanioPagina = 20);
 
         Task<MetricasReclamosVM> ObtenerMetricas(DateTime? desde, DateTime? hasta);
         Task<List<int>> ObtenerAniosDisponibles();
@@ -21,3 +21,4 @@ namespace LogeoV2.Services
 
     }
 }
+
