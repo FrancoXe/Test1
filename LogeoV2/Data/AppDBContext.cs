@@ -28,6 +28,8 @@ namespace LogeoV2.Data
 
         public DbSet<Notificacion> Notificaciones { get; set; }
 
+        public DbSet<HistorialEstado> HistorialEstados { get; set; }
+
         public override int SaveChanges()
         {
             try 
@@ -268,6 +270,26 @@ namespace LogeoV2.Data
                     tb.HasOne(r => r.Barrio).WithMany().HasForeignKey(r => r.IdBarrio).OnDelete(DeleteBehavior.Restrict);
                     tb.HasOne(r => r.Usuario).WithMany().HasForeignKey(r => r.IdUsuario).OnDelete(DeleteBehavior.Restrict);
                     tb.HasOne(r => r.DepartamentoAsignado).WithMany().HasForeignKey(r => r.IdDepartamentoAsignado).OnDelete(DeleteBehavior.Restrict);
+                });
+
+                modelBuilder.Entity<HistorialEstado>(tb =>
+                {
+                    tb.ToTable("HistorialEstados");
+                    tb.HasKey(x => x.IdHistorial);
+                    tb.Property(x => x.IdHistorial).UseIdentityColumn().ValueGeneratedOnAdd();
+                    tb.Property(x => x.EstadoAnterior).HasMaxLength(20).IsRequired();
+                    tb.Property(x => x.EstadoNuevo).HasMaxLength(20).IsRequired();
+                    tb.Property(x => x.FechaCambio).IsRequired();
+
+                    tb.HasOne(h => h.Reclamo)
+                      .WithMany()
+                      .HasForeignKey(h => h.IdReclamo)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                    tb.HasOne(h => h.UsuarioQueCambio)
+                      .WithMany()
+                      .HasForeignKey(h => h.IdUsuarioQueCambio)
+                      .OnDelete(DeleteBehavior.Restrict);
                 });
 
             });

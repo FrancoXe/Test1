@@ -73,6 +73,7 @@
                     <th>Fecha</th>
                     <th>Estado</th>
                     <th>Departamento Asignado</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -96,6 +97,21 @@
                             </select>
                         </td>
                         <td>@(r.DepartamentoAsignado?.Nombre ?? "—")</td>
+                        <td class="d-flex">
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
+                                    style="width: 32px; height: 32px; padding: 0;"
+                                    title="Ver más"
+                                    onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle ms-1"
+                                    style="width: 32px; height: 32px; padding: 0;"
+                                    title="Historial de cambios"
+                                    data-bs-toggle="modal" data-bs-target="#modalHistorialEstados"
+                                    onclick="cargarHistorialEstados(@r.IdReclamo)">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -159,8 +175,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalHistorialEstados" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="contenidoHistorialEstados">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function cargarHistorialEstados(idReclamo) {
+            fetch(`/Reclamos/HistorialEstadosReclamo?id=${idReclamo}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('contenidoHistorialEstados').innerHTML = html;
+                });
+        }
+
         function recolectarCambios(selectorFilas) {
             const filas = document.querySelectorAll(selectorFilas);
             const cambios = [];

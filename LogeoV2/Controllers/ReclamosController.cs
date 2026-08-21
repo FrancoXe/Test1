@@ -22,6 +22,8 @@ namespace LogeoV2.Controllers
             _exportService = exportService;
         }
 
+        #region --- ACCIONES GENERALES / VECINO ---
+
         [HttpGet]
         public async Task<IActionResult> NuevoModal()
         {
@@ -94,6 +96,42 @@ namespace LogeoV2.Controllers
             return View(reclamos);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> VerDetallePdf(int id)
+        {
+            var reclamo = await _context.Reclamos
+                .Include(r => r.Usuario)
+                .Include(r => r.Categoria)
+                .Include(r => r.Subcategoria)
+                .Include(r => r.Barrio)
+                .Include(r => r.DepartamentoAsignado)
+                .FirstOrDefaultAsync(r => r.IdReclamo == id);
+
+            if (reclamo == null)
+                return NotFound();
+
+            var correo = User.FindFirst("Correo")?.Value;
+            var esAdmin = User.IsInRole("Administrador");
+            var esDueno = reclamo.Usuario?.Correo == correo;
+
+            if (!esAdmin && !esDueno)
+                return Forbid();
+
+            var pdf = _exportService.ExportarReclamoDetalle(reclamo);
+            return File(pdf, "application/pdf");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> HistorialEstadosReclamo(int id)
+        {
+            var historial = await _reclamoService.ObtenerHistorialEstados(id);
+            return PartialView("_HistorialEstadosReclamo", historial);
+        }
+
+        #endregion
+
+        #region --- ADMINISTRADOR: GESTIÓN DE RECLAMOS ---
+
         [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> Gestionar(string? estado, string? busqueda, int pagina = 1)
@@ -115,11 +153,26 @@ namespace LogeoV2.Controllers
 
         [Authorize(Roles = "Administrador")]
         [HttpPost]
+        public async Task<IActionResult> CambiarEstado(int idReclamo, string nuevoEstado, string? estado, bool notificar = true)
+        {
+            var idUsuario = await ObtenerIdUsuarioActual();
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, idUsuario, notificar);
+            TempData["Mensaje"] = exito ? "Estado actualizado exitosamente." : "No se pudo actualizar el estado.";
+            return RedirectToAction(nameof(Gestionar), new { estado });
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
         public async Task<IActionResult> CambiarEstadoAjax(int idReclamo, string nuevoEstado, bool notificar = true)
         {
-            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar);
+            var idUsuario = await ObtenerIdUsuarioActual();
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, idUsuario, notificar);
             return Json(new { success = exito });
         }
+
+        #endregion
+
+        #region --- ADMINISTRADOR: HISTORIAL Y EXPORTACIÓN ---
 
         [Authorize(Roles = "Administrador")]
         [HttpGet]
@@ -153,18 +206,18 @@ namespace LogeoV2.Controllers
 
             var encabezados = new List<string> { "ID", "DNI", "Vecino", "Categoría", "Subcategoría", "Barrio", "Dirección", "Descripción", "Fecha", "Estado" };
             var filas = resultado.Items.Select(r => new List<string>
-    {
-        r.IdReclamo.ToString(),
-        r.DNI,
-        $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
-        r.Categoria?.Nombre ?? "",
-        r.Subcategoria?.Nombre ?? "",
-        r.Barrio?.Nombre ?? "",
-        r.Direccion,
-        r.Descripcion,
-        r.FechaCreacion.ToString("g"),
-        r.Estado
-    }).ToList();
+            {
+                r.IdReclamo.ToString(),
+                r.DNI,
+                $"{r.Usuario?.Nombre} {r.Usuario?.Apellido}",
+                r.Categoria?.Nombre ?? "",
+                r.Subcategoria?.Nombre ?? "",
+                r.Barrio?.Nombre ?? "",
+                r.Direccion,
+                r.Descripcion,
+                r.FechaCreacion.ToString("g"),
+                r.Estado
+            }).ToList();
 
             var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
 
@@ -180,30 +233,66 @@ namespace LogeoV2.Controllers
             };
         }
 
+        #endregion
+
+        #region --- ADMINISTRADOR: MÉTRICAS Y REPORTES ---
+
+        [Authorize(Roles = "Administrador")]
         [HttpGet]
-        public async Task<IActionResult> VerDetallePdf(int id)
+        public async Task<IActionResult> Metricas(DateTime? fechaDesde, DateTime? fechaHasta)
         {
-            var reclamo = await _context.Reclamos
-                .Include(r => r.Usuario)
-                .Include(r => r.Categoria)
-                .Include(r => r.Subcategoria)
-                .Include(r => r.Barrio)
-                .Include(r => r.DepartamentoAsignado)
-                .FirstOrDefaultAsync(r => r.IdReclamo == id);
-
-            if (reclamo == null)
-                return NotFound();
-
-            var correo = User.FindFirst("Correo")?.Value;
-            var esAdmin = User.IsInRole("Administrador");
-            var esDueno = reclamo.Usuario?.Correo == correo;
-
-            if (!esAdmin && !esDueno)
-                return Forbid();
-
-            var pdf = _exportService.ExportarReclamoDetalle(reclamo);
-            return File(pdf, "application/pdf");
+            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
+            return View(vm);
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ExportarMetricas(string formato, DateTime? fechaDesde, DateTime? fechaHasta)
+        {
+            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
+
+            var encabezados = new List<string> { "Categoría", "Cantidad", "Promedio días resolución" };
+            var filas = vm.PorCategoria.Select(c => new List<string>
+            {
+                c.Nombre,
+                c.Cantidad.ToString(),
+                c.PromedioDias.ToString("F1")
+            }).ToList();
+
+            var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
+
+            return formato switch
+            {
+                "excel" => File(_exportService.ExportarExcel("Métricas por Categoría", encabezados, filas),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Metricas_{fecha}.xlsx"),
+                "pdf" => File(_exportService.ExportarPdf("Métricas por Categoría", encabezados, filas),
+                    "application/pdf", $"Metricas_{fecha}.pdf"),
+                "csv" => File(_exportService.ExportarCsv(encabezados, filas),
+                    "text/csv", $"Metricas_{fecha}.csv"),
+                _ => BadRequest("Formato no soportado")
+            };
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerAnios()
+        {
+            var anios = await _reclamoService.ObtenerAniosDisponibles();
+            return Json(anios);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerTendencia(string periodos)
+        {
+            var lista = periodos.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var vm = await _reclamoService.ObtenerTendencia(lista);
+            return Json(vm);
+        }
+
+        #endregion
+
+        #region --- DEPARTAMENTO ---
 
         [Authorize(Roles = "Departamento")]
         [HttpGet]
@@ -251,60 +340,21 @@ namespace LogeoV2.Controllers
             if (reclamo == null || reclamo.IdDepartamentoAsignado != usuario?.IdDepartamento)
                 return Forbid();
 
-            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, notificar: true);
+            var exito = await _reclamoService.CambiarEstadoReclamo(idReclamo, nuevoEstado, usuario!.IDUsuario, notificar: true);
             return Json(new { success = exito });
         }
 
-        [Authorize(Roles = "Administrador")]
-        [HttpGet]
-        public async Task<IActionResult> Metricas(DateTime? fechaDesde, DateTime? fechaHasta)
+        #endregion
+
+        #region --- MÉTODOS PRIVADOS AUXILIARES ---
+
+        private async Task<int> ObtenerIdUsuarioActual()
         {
-            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
-            return View(vm);
+            var correo = User.FindFirst("Correo")?.Value;
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+            return usuario?.IDUsuario ?? 0;
         }
 
-        [Authorize(Roles = "Administrador")]
-        [HttpGet]
-        public async Task<IActionResult> ExportarMetricas(string formato, DateTime? fechaDesde, DateTime? fechaHasta)
-        {
-            var vm = await _reclamoService.ObtenerMetricas(fechaDesde, fechaHasta);
-
-            var encabezados = new List<string> { "Categoría", "Cantidad", "Promedio días resolución" };
-            var filas = vm.PorCategoria.Select(c => new List<string>
-    {
-        c.Nombre,
-        c.Cantidad.ToString(),
-        c.PromedioDias.ToString("F1")
-    }).ToList();
-
-            var fecha = DateTime.Now.ToString("yyyyMMdd_HHmm");
-
-            return formato switch
-            {
-                "excel" => File(_exportService.ExportarExcel("Métricas por Categoría", encabezados, filas),
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Metricas_{fecha}.xlsx"),
-                "pdf" => File(_exportService.ExportarPdf("Métricas por Categoría", encabezados, filas),
-                    "application/pdf", $"Metricas_{fecha}.pdf"),
-                "csv" => File(_exportService.ExportarCsv(encabezados, filas),
-                    "text/csv", $"Metricas_{fecha}.csv"),
-                _ => BadRequest("Formato no soportado")
-            };
-        }
-        [Authorize(Roles = "Administrador")]
-        [HttpGet]
-        public async Task<IActionResult> ObtenerAnios()
-        {
-            var anios = await _reclamoService.ObtenerAniosDisponibles();
-            return Json(anios);
-        }
-
-        [Authorize(Roles = "Administrador")]
-        [HttpGet]
-        public async Task<IActionResult> ObtenerTendencia(string periodos)
-        {
-            var lista = periodos.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-            var vm = await _reclamoService.ObtenerTendencia(lista);
-            return Json(vm);
-        }
+        #endregion
     }
 }

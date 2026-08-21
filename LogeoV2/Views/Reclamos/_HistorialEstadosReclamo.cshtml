@@ -1,0 +1,27 @@
+﻿@model List<LogeoV2.Models.HistorialEstado>
+
+<div class="modal-header">
+    <h5 class="modal-title">Historial de Cambios</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    @if (!Model.Any())
+    {
+        <p class="text-muted">Este reclamo todavía no tuvo cambios de estado.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var h in Model)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>@h.EstadoAnterior</strong> → <strong>@h.EstadoNuevo</strong></span>
+                        <span class="text-muted small">@h.FechaCambio.ToString("g")</span>
+                    </div>
+                    <div class="text-muted small">Por: @h.UsuarioQueCambio?.Nombre @h.UsuarioQueCambio?.Apellido</div>
+                </li>
+            }
+        </ul>
+    }
+</div>

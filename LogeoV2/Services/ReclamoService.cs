@@ -91,7 +91,7 @@ namespace LogeoV2.Services
             return await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();
         }
 
-        public async Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, bool notificar = true)
+        public async Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, int idUsuarioQueCambia, bool notificar = true)
         {
             if (!EstadosValidos.Contains(nuevoEstado))
                 return false;
@@ -103,6 +103,8 @@ namespace LogeoV2.Services
             if (reclamo == null)
                 return false;
 
+            var estadoAnterior = reclamo.Estado;
+
             reclamo.Estado = nuevoEstado;
             reclamo.FechaActualizacion = DateTime.UtcNow;
 
@@ -111,6 +113,15 @@ namespace LogeoV2.Services
                 reclamo.IdDepartamentoAsignado = reclamo.Categoria.IdDepartamento;
                 _logger.LogInformation($"Reclamo {idReclamo} asignado automáticamente al departamento {reclamo.IdDepartamentoAsignado}");
             }
+
+            _context.HistorialEstados.Add(new HistorialEstado
+            {
+                IdReclamo = idReclamo,
+                EstadoAnterior = estadoAnterior,
+                EstadoNuevo = nuevoEstado,
+                FechaCambio = DateTime.UtcNow,
+                IdUsuarioQueCambio = idUsuarioQueCambia
+            });
 
             await _context.SaveChangesAsync();
 
@@ -124,6 +135,15 @@ namespace LogeoV2.Services
             }
 
             return true;
+        }
+
+        public async Task<List<HistorialEstado>> ObtenerHistorialEstados(int idReclamo)
+        {
+            return await _context.HistorialEstados
+                .Include(h => h.UsuarioQueCambio)
+                .Where(h => h.IdReclamo == idReclamo)
+                .OrderBy(h => h.FechaCambio)
+                .ToListAsync();
         }
 
         public async Task<List<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda)
