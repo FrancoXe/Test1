@@ -1,6 +1,7 @@
 ﻿@model LogeoV2.ViewModels.GestionReclamosVM
 @{
     ViewData["Title"] = "Gestionar Reclamos";
+    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Gestionar Reclamos", null) };
 }
 
 <h1>Gestionar Reclamos</h1>
@@ -185,6 +186,24 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalConfirmarRechazo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar rechazo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="mensajeConfirmarRechazo">Estás por rechazar 1 reclamo. Esta acción notificará al vecino. ¿Confirmás?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarRechazo">Sí, rechazar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function cargarHistorialEstados(idReclamo) {
@@ -195,7 +214,7 @@
                 });
         }
 
-        function recolectarCambios(selectorFilas) {
+                function recolectarCambios(selectorFilas) {
             const filas = document.querySelectorAll(selectorFilas);
             const cambios = [];
 
@@ -212,12 +231,7 @@
             return cambios;
         }
 
-        async function guardarCambios(cambios, boton) {
-            if (cambios.length === 0) {
-                alert('No hay cambios para guardar.');
-                return;
-            }
-
+        async function ejecutarGuardado(cambios, boton) {
             boton.disabled = true;
             boton.textContent = 'Guardando...';
 
@@ -235,6 +249,37 @@
             }
 
             location.reload();
+        }
+
+        function guardarCambios(cambios, boton) {
+            if (cambios.length === 0) {
+                alert('No hay cambios para guardar.');
+                return;
+            }
+
+            const cantidadRechazos = cambios.filter(c => c.nuevoEstado === 'Rechazado').length;
+
+            if (cantidadRechazos > 0) {
+                const mensaje = cantidadRechazos === 1
+                    ? 'Estás por rechazar 1 reclamo. Esta acción notificará al vecino. ¿Confirmás?'
+                    : `Estás por rechazar ${cantidadRechazos} reclamos. Esta acción notificará a los vecinos. ¿Confirmás?`;
+
+                document.getElementById('mensajeConfirmarRechazo').textContent = mensaje;
+
+                const modal = new bootstrap.Modal(document.getElementById('modalConfirmarRechazo'));
+                modal.show();
+
+                const btnConfirmar = document.getElementById('btnConfirmarRechazo');
+                const nuevoBtn = btnConfirmar.cloneNode(true);
+                btnConfirmar.parentNode.replaceChild(nuevoBtn, btnConfirmar);
+
+                nuevoBtn.addEventListener('click', function () {
+                    modal.hide();
+                    ejecutarGuardado(cambios, boton);
+                });
+            } else {
+                ejecutarGuardado(cambios, boton);
+            }
         }
 
         const btnActivos = document.getElementById('btnGuardarCambios');

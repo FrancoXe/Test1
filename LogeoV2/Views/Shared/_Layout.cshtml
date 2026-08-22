@@ -93,7 +93,7 @@
     {
         var items = ((List<(string Texto, string? Url)>)ViewData["Breadcrumb"]!);
         <nav aria-label="breadcrumb" class="container mt-2">
-            <ol class="breadcrumb mb-2">
+            <ol class="breadcrumb mb-2" id="breadcrumbList">
                 <li class="breadcrumb-item">
                     <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
                         <i class="bi bi-house-door"></i>
@@ -115,6 +115,12 @@
             </ol>
         </nav>
     }
+
+    <button id="btnVolverArriba" class="btn btn-primary rounded-circle shadow d-none"
+            style="position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; z-index: 1000;"
+            title="Volver arriba">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -184,6 +190,8 @@
             const selectCategoria = document.getElementById('selectCategoria');
             const selectSubcategoria = document.getElementById('selectSubcategoria');
             const form = document.getElementById('formNuevoReclamo');
+            const inputArchivo = document.getElementById('archivoAdjunto');
+            const avisoArchivo = document.getElementById('avisoArchivo');
 
             selectCategoria.addEventListener('change', function () {
                 const idCategoria = this.value;
@@ -207,8 +215,41 @@
                     });
             });
 
+            if (inputArchivo) {
+                inputArchivo.addEventListener('change', function () {
+                    avisoArchivo.classList.add('d-none');
+                    avisoArchivo.textContent = '';
+
+                    const archivo = this.files[0];
+                    if (!archivo) return;
+
+                    const tiposValidos = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+                    const tamanioMaximo = 5 * 1024 * 1024;
+
+                    if (!tiposValidos.includes(archivo.type)) {
+                        avisoArchivo.textContent = 'Solo se permiten imágenes (JPG, PNG o WEBP).';
+                        avisoArchivo.classList.remove('d-none');
+                        this.value = '';
+                        return;
+                    }
+
+                    if (archivo.size > tamanioMaximo) {
+                        const tamanioMB = (archivo.size / (1024 * 1024)).toFixed(1);
+                        avisoArchivo.textContent = `El archivo pesa ${tamanioMB}MB. El máximo permitido es 5MB.`;
+                        avisoArchivo.classList.remove('d-none');
+                        this.value = '';
+                        return;
+                    }
+                });
+            }
+
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
+
+                if (avisoArchivo && !avisoArchivo.classList.contains('d-none')) {
+                    return;
+                }
+
                 const formData = new FormData(form);
 
                 fetch('/Reclamos/Crear', { method: 'POST', body: formData })
@@ -260,6 +301,22 @@
 
         cargarNotificaciones();
         setInterval(cargarNotificaciones, 30000);
+    </script>
+
+    <script>
+        const btnVolverArriba = document.getElementById('btnVolverArriba');
+
+        window.addEventListener('scroll', function () {
+            if (window.scrollY > 300) {
+                btnVolverArriba.classList.remove('d-none');
+            } else {
+                btnVolverArriba.classList.add('d-none');
+            }
+        });
+
+        btnVolverArriba.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

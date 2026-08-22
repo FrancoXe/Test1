@@ -547,5 +547,46 @@
                 }, 50);
             });
         });
+
+                const nombresPestanas = {
+            'tabResumen': 'Resumen',
+            'tabMotivo': 'Motivo',
+            'tabDepartamento': 'Departamento',
+            'tabBarrio': 'Barrio',
+            'tabTendencia': 'Tendencia',
+            'tabNotificaciones': 'Notificaciones'
+        };
+
+        function actualizarBreadcrumbTab(idPestana) {
+            const lista = document.getElementById('breadcrumbList');
+            if (!lista) return;
+
+            const nombre = nombresPestanas[idPestana] || '';
+
+            let itemBase = lista.children[1];
+            if (itemBase) {
+                itemBase.classList.remove('active');
+                itemBase.removeAttribute('aria-current');
+                itemBase.innerHTML = '<a href="#" onclick="return false;" class="text-decoration-none">Reportes</a>';
+            }
+
+            let itemDinamico = document.getElementById('breadcrumbTabDinamico');
+            if (!itemDinamico) {
+                itemDinamico = document.createElement('li');
+                itemDinamico.id = 'breadcrumbTabDinamico';
+                itemDinamico.className = 'breadcrumb-item active';
+                itemDinamico.setAttribute('aria-current', 'page');
+                lista.appendChild(itemDinamico);
+            }
+            itemDinamico.textContent = nombre;
+        }
+
+        document.querySelectorAll('#tabsMetricas button').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function () {
+                actualizarBreadcrumbTab(this.getAttribute('data-bs-target').replace('#', ''));
+            });
+        });
+
+        actualizarBreadcrumbTab('tabResumen');
     </script>
 }

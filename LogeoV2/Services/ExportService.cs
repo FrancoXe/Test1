@@ -107,8 +107,20 @@ namespace LogeoV2.Services
             }
             return valor;
         }
+
         public byte[] ExportarReclamoDetalle(Reclamo reclamo)
         {
+            byte[]? imagenBytes = null;
+
+            if (!string.IsNullOrEmpty(reclamo.RutaArchivo))
+            {
+                var rutaFisica = Path.Combine(_webHostEnvironment.WebRootPath, reclamo.RutaArchivo.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
+                if (File.Exists(rutaFisica))
+                {
+                    imagenBytes = File.ReadAllBytes(rutaFisica);
+                }
+            }
+
             var documento = Document.Create(container =>
             {
                 container.Page(page =>
@@ -155,10 +167,20 @@ namespace LogeoV2.Services
                             col.Item().Text($"Última actualización: {reclamo.FechaActualizacion:dd/MM/yyyy HH:mm}");
                         }
 
-                        if (!string.IsNullOrEmpty(reclamo.RutaArchivo))
+                        col.Item().PaddingTop(10).Text("Fotografía adjunta").Bold().FontSize(13);
+
+                        if (imagenBytes != null)
                         {
-                            col.Item().PaddingTop(10).Text("Este reclamo incluye un archivo adjunto (no incorporado en este informe).")
-                                .FontSize(9).FontColor(Colors.Grey.Darken1).Italic();
+                            col.Item().PaddingTop(4).MaxHeight(250).Image(imagenBytes).FitArea();
+                        }
+                        else
+                        {
+                            col.Item().PaddingTop(4).Background(Colors.Grey.Lighten3)
+                                .Height(120)
+                                .AlignCenter().AlignMiddle()
+                                .Text("Sin fotografía adjunta")
+                                .FontColor(Colors.Grey.Darken1)
+                                .Italic();
                         }
                     });
 
@@ -176,6 +198,14 @@ namespace LogeoV2.Services
             });
 
             return documento.GeneratePdf();
+        }
+
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public ExportService(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+            QuestPDF.Settings.License = LicenseType.Community;
         }
     }
 }
