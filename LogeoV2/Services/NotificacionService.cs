@@ -37,10 +37,63 @@ namespace LogeoV2.Services
                     var correo = usuario.Correo;
                     _ = Task.Run(async () =>
                     {
-                        using var scope = _scopeFactory.CreateScope();
-                        var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                        await emailService.EnviarEmail(correo, titulo, mensaje);
+                        try
+                        {
+                            using var scope = _scopeFactory.CreateScope();
+                            var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                            await emailService.EnviarEmail(correo, titulo, mensaje);
+                        }
+                        catch
+                        {
+                            // El logging real ya ocurre dentro de EmailService
+                        }
                     });
+                }
+            }
+        }
+
+        public async Task CrearNotificacionCambioEstado(Reclamo reclamo, string estadoAnterior, string estadoNuevo, string urlBase, bool enviarEmail = true)
+        {
+            var notificacion = new Notificacion
+            {
+                IdUsuario = reclamo.IdUsuario,
+                Titulo = $"Reclamo #{reclamo.IdReclamo} - {estadoNuevo}",
+                Mensaje = $"Tu reclamo cambió de {estadoAnterior} a {estadoNuevo}.",
+                FechaCreacion = DateTime.UtcNow,
+                Leida = false
+            };
+
+            _context.Notificaciones.Add(notificacion);
+            await _context.SaveChangesAsync();
+
+            if (enviarEmail)
+            {
+                var usuario = await _context.Usuarios.FindAsync(reclamo.IdUsuario);
+                if (usuario != null)
+                {
+                    var correo = usuario.Correo;
+                    var idReclamo = reclamo.IdReclamo;
+
+                    var reclamoCompleto = await _context.Reclamos
+                        .Include(r => r.Categoria)
+                        .FirstOrDefaultAsync(r => r.IdReclamo == idReclamo);
+
+                    if (reclamoCompleto != null)
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var scope = _scopeFactory.CreateScope();
+                                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                                await emailService.EnviarEmailCambioEstado(correo, reclamoCompleto, estadoAnterior, estadoNuevo, urlBase);
+                            }
+                            catch
+                            {
+                                // El logging real ya ocurre dentro de EmailService
+                            }
+                        });
+                    }
                 }
             }
         }

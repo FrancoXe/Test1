@@ -44,6 +44,8 @@ builder.Services.AddScoped<IReclamoService, ReclamoService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
 
+builder.Services.AddHttpContextAccessor();
+
 // Agregar servicios de autenticación por cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

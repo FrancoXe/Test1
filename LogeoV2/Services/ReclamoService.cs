@@ -12,6 +12,7 @@ namespace LogeoV2.Services
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<ReclamoService> _logger;
         private readonly INotificacionService _notificacionService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private static readonly string[] EstadosValidos = { "Pendiente", "Aceptado", "Rechazado", "En Proceso", "Resuelto" };
 
@@ -19,12 +20,14 @@ namespace LogeoV2.Services
             AppDBContext context,
             IWebHostEnvironment webHostEnvironment,
             ILogger<ReclamoService> logger,
-            INotificacionService notificacionService)
+            INotificacionService notificacionService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
             _notificacionService = notificacionService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Reclamo> CrearReclamo(Reclamo reclamo, IFormFile? archivo)
@@ -65,7 +68,7 @@ namespace LogeoV2.Services
         public async Task<List<Barrio>> ObtenerBarrios() =>
             await _context.Barrios.ToListAsync();
 
-        public async Task<List<Reclamo>> ObtenerReclamos(string? estado, string? busqueda = null)
+        public async Task<ResultadoPaginado<Reclamo>> ObtenerReclamos(string? estado, string? busqueda, int pagina = 1, int tamanioPagina = 20)
         {
             var query = _context.Reclamos
                 .Include(r => r.Usuario)
@@ -76,9 +79,7 @@ namespace LogeoV2.Services
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(estado))
-            {
                 query = query.Where(r => r.Estado == estado);
-            }
 
             if (!string.IsNullOrWhiteSpace(busqueda))
             {
@@ -88,7 +89,21 @@ namespace LogeoV2.Services
                     r.Usuario!.Apellido.ToLower().Contains(termino));
             }
 
-            return await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();
+            query = query.OrderByDescending(r => r.FechaCreacion);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * tamanioPagina)
+                .Take(tamanioPagina)
+                .ToListAsync();
+
+            return new ResultadoPaginado<Reclamo>
+            {
+                Items = items,
+                PaginaActual = pagina,
+                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
+                TotalRegistros = total
+            };
         }
 
         public async Task<bool> CambiarEstadoReclamo(int idReclamo, string nuevoEstado, int idUsuarioQueCambia, bool notificar = true)
@@ -127,26 +142,16 @@ namespace LogeoV2.Services
 
             if (notificar)
             {
-                await _notificacionService.CrearNotificacion(
-                    reclamo.IdUsuario,
-                    $"Reclamo #{reclamo.IdReclamo} - {nuevoEstado}",
-                    $"Tu reclamo fue actualizado al estado: {nuevoEstado}."
-                );
+                var request = _httpContextAccessor.HttpContext?.Request;
+                var urlBase = request != null ? $"{request.Scheme}://{request.Host}" : "";
+
+                await _notificacionService.CrearNotificacionCambioEstado(reclamo, estadoAnterior, nuevoEstado, urlBase);
             }
 
             return true;
         }
 
-        public async Task<List<HistorialEstado>> ObtenerHistorialEstados(int idReclamo)
-        {
-            return await _context.HistorialEstados
-                .Include(h => h.UsuarioQueCambio)
-                .Where(h => h.IdReclamo == idReclamo)
-                .OrderBy(h => h.FechaCambio)
-                .ToListAsync();
-        }
-
-        public async Task<List<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda)
+        public async Task<ResultadoPaginado<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda, int pagina = 1, int tamanioPagina = 20)
         {
             var query = _context.Reclamos
                 .Include(r => r.Usuario)
@@ -180,7 +185,21 @@ namespace LogeoV2.Services
                     r.Usuario!.Apellido.ToLower().Contains(termino));
             }
 
-            return await query.OrderByDescending(r => r.FechaCreacion).ToListAsync();
+            query = query.OrderByDescending(r => r.FechaCreacion);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * tamanioPagina)
+                .Take(tamanioPagina)
+                .ToListAsync();
+
+            return new ResultadoPaginado<Reclamo>
+            {
+                Items = items,
+                PaginaActual = pagina,
+                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
+                TotalRegistros = total
+            };
         }
 
         public async Task<MetricasReclamosVM> ObtenerMetricas(DateTime? desde, DateTime? hasta)
@@ -322,7 +341,6 @@ namespace LogeoV2.Services
 
                 if (partes.Length == 1)
                 {
-                    // Año completo: agrupar por mes
                     var reclamosAnio = await _context.Reclamos
                         .Where(r => r.FechaCreacion.Year == anio)
                         .ToListAsync();
@@ -338,7 +356,6 @@ namespace LogeoV2.Services
                 }
                 else
                 {
-                    // Mes específico: agrupar por día
                     var mes = int.Parse(partes[1]);
                     var diasEnMes = DateTime.DaysInMonth(anio, mes);
 
@@ -374,93 +391,14 @@ namespace LogeoV2.Services
                 .OrderBy(r => r.FechaCreacion)
                 .ToListAsync();
         }
-        public async Task<ResultadoPaginado<Reclamo>> ObtenerReclamos(string? estado, string? busqueda, int pagina = 1, int tamanioPagina = 20)
+
+        public async Task<List<HistorialEstado>> ObtenerHistorialEstados(int idReclamo)
         {
-            var query = _context.Reclamos
-                .Include(r => r.Usuario)
-                .Include(r => r.Categoria)
-                .Include(r => r.Subcategoria)
-                .Include(r => r.Barrio)
-                .Include(r => r.DepartamentoAsignado)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(estado))
-                query = query.Where(r => r.Estado == estado);
-
-            if (!string.IsNullOrWhiteSpace(busqueda))
-            {
-                var termino = busqueda.Trim().ToLower();
-                query = query.Where(r =>
-                    r.Usuario!.Nombre.ToLower().Contains(termino) ||
-                    r.Usuario!.Apellido.ToLower().Contains(termino));
-            }
-
-            query = query.OrderByDescending(r => r.FechaCreacion);
-
-            var total = await query.CountAsync();
-            var items = await query
-                .Skip((pagina - 1) * tamanioPagina)
-                .Take(tamanioPagina)
+            return await _context.HistorialEstados
+                .Include(h => h.UsuarioQueCambio)
+                .Where(h => h.IdReclamo == idReclamo)
+                .OrderBy(h => h.FechaCambio)
                 .ToListAsync();
-
-            return new ResultadoPaginado<Reclamo>
-            {
-                Items = items,
-                PaginaActual = pagina,
-                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
-                TotalRegistros = total
-            };
-        }
-
-        public async Task<ResultadoPaginado<Reclamo>> ObtenerHistorial(string? estado, int? idCategoria, int? idBarrio, DateTime? fechaDesde, DateTime? fechaHasta, string? busqueda, int pagina = 1, int tamanioPagina = 20)
-        {
-            var query = _context.Reclamos
-                .Include(r => r.Usuario)
-                .Include(r => r.Categoria)
-                .Include(r => r.Subcategoria)
-                .Include(r => r.Barrio)
-                .Include(r => r.DepartamentoAsignado)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(estado))
-                query = query.Where(r => r.Estado == estado);
-
-            if (idCategoria.HasValue)
-                query = query.Where(r => r.IdCategoria == idCategoria.Value);
-
-            if (idBarrio.HasValue)
-                query = query.Where(r => r.IdBarrio == idBarrio.Value);
-
-            if (fechaDesde.HasValue)
-                query = query.Where(r => r.FechaCreacion >= fechaDesde.Value);
-
-            if (fechaHasta.HasValue)
-                query = query.Where(r => r.FechaCreacion <= fechaHasta.Value.AddDays(1).AddTicks(-1));
-
-            if (!string.IsNullOrWhiteSpace(busqueda))
-            {
-                var termino = busqueda.Trim().ToLower();
-                query = query.Where(r =>
-                    r.DNI.ToLower().Contains(termino) ||
-                    r.Usuario!.Nombre.ToLower().Contains(termino) ||
-                    r.Usuario!.Apellido.ToLower().Contains(termino));
-            }
-
-            query = query.OrderByDescending(r => r.FechaCreacion);
-
-            var total = await query.CountAsync();
-            var items = await query
-                .Skip((pagina - 1) * tamanioPagina)
-                .Take(tamanioPagina)
-                .ToListAsync();
-
-            return new ResultadoPaginado<Reclamo>
-            {
-                Items = items,
-                PaginaActual = pagina,
-                TotalPaginas = (int)Math.Ceiling(total / (double)tamanioPagina),
-                TotalRegistros = total
-            };
         }
     }
 }

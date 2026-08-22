@@ -266,3 +266,7 @@ a, .dropdown-item.active, .nav-tabs .nav-link.active {
 .spinner-border {
     color: #fd7e14 !important;
 }
+
+#tabsMetricas + .tab-content canvas {
+    width: 100% !important;
+}
