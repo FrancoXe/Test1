@@ -290,6 +290,27 @@ namespace LogeoV2.Controllers
             return Json(vm);
         }
 
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> BuscarGlobal(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+                return Json(new { tipo = "historial", url = Url.Action(nameof(Historial)) });
+
+            termino = termino.Trim();
+
+            if (int.TryParse(termino, out int idReclamo))
+            {
+                var existe = await _context.Reclamos.AnyAsync(r => r.IdReclamo == idReclamo);
+                if (existe)
+                {
+                    return Json(new { tipo = "detalle", url = Url.Action(nameof(VerDetallePdf), new { id = idReclamo }) });
+                }
+            }
+
+            return Json(new { tipo = "historial", url = Url.Action(nameof(Historial), new { busqueda = termino }) });
+        }
+
         #endregion
 
         #region --- DEPARTAMENTO ---

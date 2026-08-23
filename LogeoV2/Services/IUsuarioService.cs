@@ -11,9 +11,10 @@ namespace LogeoV2.Services
         /// <summary>
         /// Cambia el rol de un usuario
         /// </summary>
-        Task<bool> CambiarRolUsuario(int idUsuario, int idRol);
 
-        Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento);
         Task<List<Departamento>> ObtenerDepartamentos();
+
+        Task<bool> CambiarRolUsuario(int idUsuario, int idRol, int idUsuarioQueRealiza);
+        Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento, int idUsuarioQueRealiza);
     }
 }

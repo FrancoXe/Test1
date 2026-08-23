@@ -21,6 +21,17 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <div class="d-flex me-3" style="max-width: 280px;">
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="inputBusquedaGlobal" class="form-control" placeholder="Buscar por ID o DNI" />
+                                <button type="button" id="btnBusquedaGlobal" class="btn btn-outline-secondary">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark fs-5" href="#" id="btnNuevoReclamo" data-bs-toggle="modal" data-bs-target="#modalReclamo" title="Nuevo Reclamo">
@@ -116,12 +127,6 @@
         </nav>
     }
 
-    <button id="btnVolverArriba" class="btn btn-primary rounded-circle shadow d-none"
-            style="position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; z-index: 1000;"
-            title="Volver arriba">
-        <i class="bi bi-arrow-up"></i>
-    </button>
-
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -145,11 +150,61 @@
 
     <partial name="_ModalAyuda" />
 
+    <button id="btnVolverArriba" class="btn btn-primary rounded-circle shadow d-none"
+            style="position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; z-index: 1000;"
+            title="Volver arriba">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script>
+        const btnVolverArriba = document.getElementById('btnVolverArriba');
+
+        window.addEventListener('scroll', function () {
+            if (window.scrollY > 300) {
+                btnVolverArriba.classList.remove('d-none');
+            } else {
+                btnVolverArriba.classList.add('d-none');
+            }
+        });
+
+        btnVolverArriba.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+
+    <script>
+        const inputBusquedaGlobal = document.getElementById('inputBusquedaGlobal');
+        const btnBusquedaGlobal = document.getElementById('btnBusquedaGlobal');
+
+        async function ejecutarBusquedaGlobal() {
+            const termino = inputBusquedaGlobal.value.trim();
+            if (!termino) return;
+
+            const res = await fetch(`/Reclamos/BuscarGlobal?termino=${encodeURIComponent(termino)}`);
+            const data = await res.json();
+
+            if (data.tipo === 'detalle') {
+                window.open(data.url, '_blank');
+            } else {
+                window.location.href = data.url;
+            }
+        }
+
+        if (btnBusquedaGlobal) {
+            btnBusquedaGlobal.addEventListener('click', ejecutarBusquedaGlobal);
+
+            inputBusquedaGlobal.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ejecutarBusquedaGlobal();
+                }
+            });
+        }
+    </script>
 
     <script>
         const html = document.documentElement;
@@ -301,22 +356,6 @@
 
         cargarNotificaciones();
         setInterval(cargarNotificaciones, 30000);
-    </script>
-
-    <script>
-        const btnVolverArriba = document.getElementById('btnVolverArriba');
-
-        window.addEventListener('scroll', function () {
-            if (window.scrollY > 300) {
-                btnVolverArriba.classList.remove('d-none');
-            } else {
-                btnVolverArriba.classList.add('d-none');
-            }
-        });
-
-        btnVolverArriba.addEventListener('click', function () {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

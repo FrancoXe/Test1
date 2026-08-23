@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using LogeoV2.Data;
 using LogeoV2.Services;
 using LogeoV2.Models;
 using LogeoV2.ViewModels;
@@ -9,21 +11,27 @@ namespace LogeoV2.Controllers
     [Authorize(Roles = "Administrador")]
     public class AdministracionController : Controller
     {
+        private readonly AppDBContext _context;
         private readonly IRolService _rolService;
         private readonly IPermisoService _permisoService;
         private readonly IUsuarioService _usuarioService;
         private readonly IExportService _exportService;
+        private readonly IAuditoriaService _auditoriaService;
 
         public AdministracionController(
+            AppDBContext context,
             IRolService rolService,
             IPermisoService permisoService,
             IUsuarioService usuarioService,
-            IExportService exportService)
+            IExportService exportService,
+            IAuditoriaService auditoriaService)
         {
+            _context = context;
             _rolService = rolService;
             _permisoService = permisoService;
             _usuarioService = usuarioService;
             _exportService = exportService;
+            _auditoriaService = auditoriaService;
         }
 
         [HttpGet]
@@ -102,22 +110,19 @@ namespace LogeoV2.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CambiarRolUsuario(int idUsuario, int idRol, string? busqueda, string? ordenarPor, bool ascendente = true)
+        public async Task<IActionResult> CambiarRolUsuarioAjax(int idUsuario, int idRol)
         {
-            var exito = await _usuarioService.CambiarRolUsuario(idUsuario, idRol);
-            TempData["Mensaje"] = exito
-                ? "Rol actualizado exitosamente."
-                : "No se pudo actualizar el rol.";
-
-            return RedirectToAction(nameof(Usuarios), new { busqueda, ordenarPor, ascendente });
+            var idAdmin = await ObtenerIdUsuarioActual();
+            var exito = await _usuarioService.CambiarRolUsuario(idUsuario, idRol, idAdmin);
+            return Json(new { success = exito });
         }
 
         [HttpPost]
-        public async Task<IActionResult> AsignarDepartamento(int idUsuario, int? idDepartamento, string? busqueda, string? ordenarPor, bool ascendente = true)
+        public async Task<IActionResult> AsignarDepartamentoAjax(int idUsuario, int? idDepartamento)
         {
-            var exito = await _usuarioService.AsignarDepartamentoUsuario(idUsuario, idDepartamento);
-            TempData["Mensaje"] = exito ? "Departamento actualizado." : "No se pudo actualizar.";
-            return RedirectToAction(nameof(Usuarios), new { busqueda, ordenarPor, ascendente });
+            var idAdmin = await ObtenerIdUsuarioActual();
+            var exito = await _usuarioService.AsignarDepartamentoUsuario(idUsuario, idDepartamento, idAdmin);
+            return Json(new { success = exito });
         }
 
         [HttpGet]
@@ -149,18 +154,26 @@ namespace LogeoV2.Controllers
                 _ => BadRequest("Formato no soportado")
             };
         }
-        [HttpPost]
-        public async Task<IActionResult> CambiarRolUsuarioAjax(int idUsuario, int idRol)
-        {
-            var exito = await _usuarioService.CambiarRolUsuario(idUsuario, idRol);
-            return Json(new { success = exito });
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> AsignarDepartamentoAjax(int idUsuario, int? idDepartamento)
+        [HttpGet]
+        public async Task<IActionResult> LogAuditoriaParcial()
         {
-            var exito = await _usuarioService.AsignarDepartamentoUsuario(idUsuario, idDepartamento);
-            return Json(new { success = exito });
+            var log = await _auditoriaService.ObtenerLog();
+
+            var idsUsuarios = log.Where(l => l.Entidad == "Usuario").Select(l => l.IdEntidad).Distinct().ToList();
+            var usuarios = await _context.Usuarios
+                .Where(u => idsUsuarios.Contains(u.IDUsuario))
+                .ToDictionaryAsync(u => u.IDUsuario, u => $"{u.Nombre} {u.Apellido}");
+
+            ViewData["NombresUsuarios"] = usuarios;
+
+            return PartialView("_LogAuditoria", log);
+        }
+        private async Task<int> ObtenerIdUsuarioActual()
+        {
+            var correo = User.FindFirst("Correo")?.Value;
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+            return usuario?.IDUsuario ?? 0;
         }
     }
 }

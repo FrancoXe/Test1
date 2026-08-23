@@ -1,0 +1,33 @@
+﻿@model List<LogeoV2.Models.LogAuditoria>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Acción</th>
+            <th>Usuario</th>
+            <th>Anterior</th>
+            <th>Nuevo</th>
+            <th>Realizado por</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.FechaAccion.ToString("g")</td>
+                <td>@log.Accion</td>
+                <td>
+                    @{
+                        var nombres = (Dictionary<int, string>)(ViewData["NombresUsuarios"] ?? new Dictionary<int, string>());
+                        var nombreUsuario = nombres.ContainsKey(log.IdEntidad) ? nombres[log.IdEntidad] : $"#{log.IdEntidad}";
+                    }
+                         @nombreUsuario
+                </td>
+                <td>@log.DetalleAnterior</td>
+                <td>@log.DetalleNuevo</td>
+                <td>@log.UsuarioQueRealizo?.Nombre @log.UsuarioQueRealizo?.Apellido</td>
+            </tr>
+        }
+    </tbody>
+</table>

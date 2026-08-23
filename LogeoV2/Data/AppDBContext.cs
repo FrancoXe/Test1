@@ -30,6 +30,8 @@ namespace LogeoV2.Data
 
         public DbSet<HistorialEstado> HistorialEstados { get; set; }
 
+        public DbSet<LogAuditoria> LogAuditoria { get; set; }
+
         public override int SaveChanges()
         {
             try 
@@ -307,6 +309,23 @@ namespace LogeoV2.Data
                   .WithMany()
                   .HasForeignKey(n => n.IdUsuario)
                   .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<LogAuditoria>(tb =>
+            {
+                tb.ToTable("LogAuditoria");
+                tb.HasKey(x => x.IdLog);
+                tb.Property(x => x.IdLog).UseIdentityColumn().ValueGeneratedOnAdd();
+                tb.Property(x => x.Accion).HasMaxLength(50).IsRequired();
+                tb.Property(x => x.Entidad).HasMaxLength(50).IsRequired();
+                tb.Property(x => x.DetalleAnterior).HasMaxLength(200);
+                tb.Property(x => x.DetalleNuevo).HasMaxLength(200);
+                tb.Property(x => x.FechaAccion).IsRequired();
+
+                tb.HasOne(l => l.UsuarioQueRealizo)
+                  .WithMany()
+                  .HasForeignKey(l => l.IdUsuarioQueRealizo)
+                  .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

@@ -82,6 +82,9 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNotificaciones" type="button">Notificaciones</button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLogs" type="button">Logs</button>
+    </li>
 </ul>
 
 <div class="tab-content">
@@ -283,6 +286,12 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tabLogs">
+        <div id="contenidoLogs">
+            <div class="text-center py-4"><div class="spinner-border"></div></div>
         </div>
     </div>
 </div>
@@ -588,5 +597,15 @@
         });
 
         actualizarBreadcrumbTab('tabResumen');
+
+                document.querySelector('button[data-bs-target="#tabLogs"]').addEventListener('shown.bs.tab', function () {
+            if (document.getElementById('contenidoLogs').dataset.cargado) return;
+            fetch('@Url.Action("LogAuditoriaParcial", "Administracion")')
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('contenidoLogs').innerHTML = html;
+                    document.getElementById('contenidoLogs').dataset.cargado = 'true';
+                });
+        });
     </script>
 }

@@ -46,6 +46,8 @@ builder.Services.AddScoped<INotificacionService, NotificacionService>();
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+
 // Agregar servicios de autenticación por cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

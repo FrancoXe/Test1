@@ -9,11 +9,13 @@ namespace LogeoV2.Services
     {
         private readonly AppDBContext _context;
         private readonly ILogger<UsuarioService> _logger;
+        private readonly IAuditoriaService _auditoriaService;
 
-        public UsuarioService(AppDBContext context, ILogger<UsuarioService> logger)
+        public UsuarioService(AppDBContext context, ILogger<UsuarioService> logger, IAuditoriaService auditoriaService)
         {
             _context = context;
             _logger = logger;
+            _auditoriaService = auditoriaService;
         }
 
         public async Task<IEnumerable<Usuario>> ObtenerUsuarios(string? busqueda, string? ordenarPor, bool ascendente)
@@ -42,35 +44,46 @@ namespace LogeoV2.Services
             return await query.ToListAsync();
         }
 
-        public async Task<bool> CambiarRolUsuario(int idUsuario, int idRol)
+        public async Task<bool> CambiarRolUsuario(int idUsuario, int idRol, int idUsuarioQueRealiza)
         {
-            var usuario = await _context.Usuarios.FindAsync(idUsuario);
+            var usuario = await _context.Usuarios.Include(u => u.Rol).FirstOrDefaultAsync(u => u.IDUsuario == idUsuario);
             if (usuario == null)
-            {
-                _logger.LogWarning($"Usuario {idUsuario} no encontrado al intentar cambiar rol");
                 return false;
-            }
 
-            var rolExiste = await _context.Roles.AnyAsync(r => r.IdRol == idRol);
-            if (!rolExiste)
-            {
-                _logger.LogWarning($"Rol {idRol} no encontrado al intentar asignarlo al usuario {idUsuario}");
+            var rolNuevo = await _context.Roles.FindAsync(idRol);
+            if (rolNuevo == null)
                 return false;
-            }
+
+            var rolAnteriorNombre = usuario.Rol?.NombreRol ?? "Ninguno";
 
             usuario.IdRol = idRol;
             await _context.SaveChangesAsync();
+
             _logger.LogInformation($"Rol del usuario {idUsuario} actualizado a {idRol}");
+            await _auditoriaService.RegistrarAccion("Cambio de Rol", "Usuario", idUsuario, rolAnteriorNombre, rolNuevo.NombreRol, idUsuarioQueRealiza);
+
             return true;
         }
-        public async Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento)
+        public async Task<bool> AsignarDepartamentoUsuario(int idUsuario, int? idDepartamento, int idUsuarioQueRealiza)
         {
             var usuario = await _context.Usuarios.FindAsync(idUsuario);
             if (usuario == null)
                 return false;
 
+            var deptoAnteriorId = usuario.IdDepartamento;
+            var deptoAnteriorNombre = deptoAnteriorId.HasValue
+                ? (await _context.Departamentos.FindAsync(deptoAnteriorId.Value))?.Nombre ?? "Desconocido"
+                : "Sin asignar";
+
+            var deptoNuevoNombre = idDepartamento.HasValue
+                ? (await _context.Departamentos.FindAsync(idDepartamento.Value))?.Nombre ?? "Desconocido"
+                : "Sin asignar";
+
             usuario.IdDepartamento = idDepartamento;
             await _context.SaveChangesAsync();
+
+            await _auditoriaService.RegistrarAccion("Asignación de Departamento", "Usuario", idUsuario, deptoAnteriorNombre, deptoNuevoNombre, idUsuarioQueRealiza);
+
             return true;
         }
 
