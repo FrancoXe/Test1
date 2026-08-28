@@ -311,6 +311,39 @@ namespace LogeoV2.Controllers
             return Json(new { tipo = "historial", url = Url.Action(nameof(Historial), new { busqueda = termino }) });
         }
 
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerBarriosDisponibles()
+        {
+            var barrios = await _reclamoService.ObtenerBarrios();
+            return Json(barrios.Select(b => new { idBarrio = b.IdBarrio, nombre = b.Nombre }));
+
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> ObtenerReporteBarrio(string vista, string? barrios)
+        {
+            List<int>? ids = string.IsNullOrWhiteSpace(barrios)
+                ? null
+                : barrios.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+
+            if (vista == "estado")
+            {
+                var resultado = await _reclamoService.ObtenerEstadoPorBarrio(ids);
+                return Json(resultado);
+            }
+
+            if (vista == "motivo")
+            {
+                var resultado = await _reclamoService.ObtenerMotivoPorBarrio(ids);
+                return Json(resultado);
+            }
+
+            var cantidad = await _reclamoService.ObtenerReportePorBarrio(ids);
+            return Json(cantidad);
+        }
+
         #endregion
 
         #region --- DEPARTAMENTO ---

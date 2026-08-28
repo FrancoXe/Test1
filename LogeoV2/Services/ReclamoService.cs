@@ -400,5 +400,75 @@ namespace LogeoV2.Services
                 .OrderBy(h => h.FechaCambio)
                 .ToListAsync();
         }
+
+        public async Task<List<MetricaDesgloseVM>> ObtenerReportePorBarrio(List<int>? idsBarrio)
+        {
+            var query = _context.Reclamos.Include(r => r.Barrio).AsQueryable();
+
+            if (idsBarrio != null && idsBarrio.Any())
+                query = query.Where(r => idsBarrio.Contains(r.IdBarrio));
+
+            var reclamos = await query.ToListAsync();
+
+            return reclamos
+                .GroupBy(r => r.Barrio?.Nombre ?? "Sin barrio")
+                .Select(g => new MetricaDesgloseVM
+                {
+                    Nombre = g.Key,
+                    Cantidad = g.Count(),
+                    PromedioDias = g.Where(r => r.Estado == "Resuelto" && r.FechaActualizacion.HasValue)
+                                    .Select(r => (r.FechaActualizacion!.Value - r.FechaCreacion).TotalDays)
+                                    .DefaultIfEmpty(0).Average()
+                })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+        }
+
+        public async Task<List<EstadoBarrioVM>> ObtenerEstadoPorBarrio(List<int>? idsBarrio)
+        {
+            var query = _context.Reclamos.Include(r => r.Barrio).AsQueryable();
+
+            if (idsBarrio != null && idsBarrio.Any())
+                query = query.Where(r => idsBarrio.Contains(r.IdBarrio));
+
+            var reclamos = await query.ToListAsync();
+
+            return reclamos
+                .GroupBy(r => r.Barrio?.Nombre ?? "Sin barrio")
+                .Select(g => new EstadoBarrioVM
+                {
+                    Barrio = g.Key,
+                    Pendiente = g.Count(r => r.Estado == "Pendiente"),
+                    Aceptado = g.Count(r => r.Estado == "Aceptado"),
+                    EnProceso = g.Count(r => r.Estado == "En Proceso"),
+                    Resuelto = g.Count(r => r.Estado == "Resuelto"),
+                    Rechazado = g.Count(r => r.Estado == "Rechazado")
+                })
+                .OrderByDescending(x => x.Pendiente + x.EnProceso)
+                .ToList();
+        }
+
+        public async Task<List<MotivoPorBarrioVM>> ObtenerMotivoPorBarrio(List<int>? idsBarrio)
+        {
+            var query = _context.Reclamos.Include(r => r.Barrio).Include(r => r.Categoria).AsQueryable();
+
+            if (idsBarrio != null && idsBarrio.Any())
+                query = query.Where(r => idsBarrio.Contains(r.IdBarrio));
+
+            var reclamos = await query.ToListAsync();
+
+            return reclamos
+                .GroupBy(r => r.Barrio?.Nombre ?? "Sin barrio")
+                .Select(g => new MotivoPorBarrioVM
+                {
+                    Barrio = g.Key,
+                    Categorias = g.GroupBy(r => r.Categoria?.Nombre ?? "Sin categoría")
+                                  .Select(cg => new CategoriaCantidadVM { Categoria = cg.Key, Cantidad = cg.Count() })
+                                  .OrderByDescending(c => c.Cantidad)
+                                  .ToList()
+                })
+                .OrderByDescending(b => b.Categorias.Sum(c => c.Cantidad))
+                .ToList();
+        }
     }
 }

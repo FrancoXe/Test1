@@ -17,5 +17,10 @@ namespace LogeoV2.Services
         Task<TendenciaVM> ObtenerTendencia(List<string> periodos);
         Task<List<Reclamo>> ObtenerReclamosVencidos();
         Task<List<HistorialEstado>> ObtenerHistorialEstados(int idReclamo);
+
+        Task<List<MetricaDesgloseVM>> ObtenerReportePorBarrio(List<int>? idsBarrio);
+
+        Task<List<EstadoBarrioVM>> ObtenerEstadoPorBarrio(List<int>? idsBarrio);
+        Task<List<MotivoPorBarrioVM>> ObtenerMotivoPorBarrio(List<int>? idsBarrio);
     }
 }
