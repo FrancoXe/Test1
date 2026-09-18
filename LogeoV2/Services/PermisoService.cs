@@ -22,14 +22,6 @@ namespace LogeoV2.Services
                 }
             },
             {
-                "Moderador", new List<string>
-                {
-                    PermisosDefecto.VerPerfil,
-                    PermisosDefecto.EditarPerfil,
-                    PermisosDefecto.VerRegistros
-                }
-            },
-            {
                 "Administrador", new List<string>
                 {
                     PermisosDefecto.VerPerfil,
