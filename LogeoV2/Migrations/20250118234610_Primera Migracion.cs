@@ -11,7 +11,7 @@ namespace LogeoV2.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Usuario",
+                name: "Usuarios",
                 columns: table => new
                 {
                     IDUsuario = table.Column<int>(type: "int", nullable: false)
