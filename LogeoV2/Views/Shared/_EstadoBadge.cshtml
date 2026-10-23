@@ -1,0 +1,12 @@
+﻿@model string
+@{
+    var clase = (Model ?? "").Trim().ToLowerInvariant() switch
+    {
+        "aceptado" => "estado-aceptado",
+        "en proceso" => "estado-en-proceso",
+        "resuelto" => "estado-resuelto",
+        "rechazado" => "estado-rechazado",
+        _ => "estado-pendiente"
+    };
+}
+<span class="estado @clase">@Model</span>
