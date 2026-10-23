@@ -3,70 +3,92 @@
 <form id="formNuevoReclamo" asp-controller="Reclamos" asp-action="Crear" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <div class="modal-header">
-        <h5 class="modal-title">Nuevo Reclamo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title">
+            <i class="bi bi-plus-circle me-2" style="color: var(--color-acento);"></i>Nuevo Reclamo
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
     </div>
     <div class="modal-body">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <div class="mb-3">
-            <label class="form-label">DNI</label>
-            <input asp-for="DNI" class="form-control" />
-            <span asp-validation-for="DNI" class="text-danger"></span>
-        </div>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-person-vcard me-1"></i>DNI
+                </label>
+                <input asp-for="DNI" class="form-control" placeholder="Sin puntos ni espacios" />
+                <span asp-validation-for="DNI" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Categoría</label>
-            <select asp-for="IdCategoria" id="selectCategoria" class="form-select">
-                <option value="">Seleccioná una categoría</option>
-                @foreach (var c in Model.Categorias)
-                {
-                    <option value="@c.IdCategoria">@c.Nombre</option>
-                }
-            </select>
-            <span asp-validation-for="IdCategoria" class="text-danger"></span>
-        </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-tag me-1"></i>Categoría
+                </label>
+                <select asp-for="IdCategoria" id="selectCategoria" class="form-select">
+                    <option value="">Seleccioná una categoría</option>
+                    @foreach (var c in Model.Categorias)
+                    {
+                        <option value="@c.IdCategoria">@c.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="IdCategoria" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Subcategoría</label>
-            <select asp-for="IdSubcategoria" id="selectSubcategoria" class="form-select">
-                <option value="">Seleccioná primero una categoría</option>
-            </select>
-            <span asp-validation-for="IdSubcategoria" class="text-danger"></span>
-        </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-tags me-1"></i>Subcategoría
+                </label>
+                <select asp-for="IdSubcategoria" id="selectSubcategoria" class="form-select">
+                    <option value="">Seleccioná primero una categoría</option>
+                </select>
+                <span asp-validation-for="IdSubcategoria" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Barrio</label>
-            <select asp-for="IdBarrio" class="form-select">
-                <option value="">Seleccioná un barrio</option>
-                @foreach (var b in Model.Barrios)
-                {
-                    <option value="@b.IdBarrio">@b.Nombre</option>
-                }
-            </select>
-            <span asp-validation-for="IdBarrio" class="text-danger"></span>
-        </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-geo-alt me-1"></i>Barrio
+                </label>
+                <select asp-for="IdBarrio" class="form-select">
+                    <option value="">Seleccioná un barrio</option>
+                    @foreach (var b in Model.Barrios)
+                    {
+                        <option value="@b.IdBarrio">@b.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="IdBarrio" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Dirección</label>
-            <input asp-for="Direccion" class="form-control" />
-            <span asp-validation-for="Direccion" class="text-danger"></span>
-        </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-signpost me-1"></i>Dirección
+                </label>
+                <input asp-for="Direccion" class="form-control" placeholder="Calle y altura" />
+                <span asp-validation-for="Direccion" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Descripcion" class="text-danger"></span>
-        </div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-chat-left-text me-1"></i>Descripción
+                </label>
+                <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Contanos qué está pasando"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Archivo adjunto (opcional, máx. 5MB)</label>
-            <input asp-for="Archivo" type="file" id="archivoAdjunto" accept="image/jpeg,image/png,image/webp" class="form-control" />
-            <div id="avisoArchivo" class="text-danger small mt-1 d-none"></div>
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-paperclip me-1"></i>Archivo adjunto
+                    <span class="fw-normal" style="color: var(--color-texto-suave);">(opcional)</span>
+                </label>
+                <input asp-for="Archivo" type="file" id="archivoAdjunto" accept="image/jpeg,image/png,image/webp" class="form-control" />
+                <div class="form-text" style="color: var(--color-texto-suave);">JPG, PNG o WEBP. Máximo 5MB.</div>
+                <div id="avisoArchivo" class="text-danger small mt-1 d-none"></div>
+            </div>
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Enviar reclamo</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-1"></i>Enviar reclamo
+        </button>
     </div>
 </form>

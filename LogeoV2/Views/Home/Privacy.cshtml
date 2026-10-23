@@ -1,49 +1,89 @@
-﻿@{
+﻿@using System.Globalization
+@{
     ViewData["Title"] = "Política de Privacidad";
+    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Política de Privacidad", null) };
+    var fechaActualizacion = DateTime.Now.ToString("MMMM yyyy", new CultureInfo("es-AR"));
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="panel privacidad mx-auto">
+    <div class="panel-header">
+        <h1>@ViewData["Title"]</h1>
+    </div>
 
-<p class="text-muted">Última actualización: @DateTime.Now.ToString("MMMM yyyy")</p>
+    <p style="color: var(--color-texto-suave);">Última actualización: @fechaActualizacion</p>
 
-<h4>1. Datos que recolectamos</h4>
-<p>
-    Para poder gestionar tus reclamos, el Sistema de Gestión de Reclamos de la Municipalidad de Unquillo
-    recolecta y almacena los siguientes datos:
-</p>
-<ul>
-    <li>Nombre y apellido</li>
-    <li>Documento Nacional de Identidad (DNI)</li>
-    <li>Correo electrónico</li>
-    <li>Dirección del reclamo</li>
-    <li>Descripción del reclamo y, opcionalmente, una fotografía adjunta</li>
-</ul>
+    <section>
+        <h2 class="privacidad-titulo"><i class="bi bi-database"></i>1. Datos que recolectamos</h2>
+        <p>
+            Para poder gestionar tus reclamos, el Sistema de Gestión de Reclamos de la Municipalidad de Unquillo
+            recolecta y almacena los siguientes datos:
+        </p>
+        <ul>
+            <li>Nombre y apellido</li>
+            <li>Documento Nacional de Identidad (DNI)</li>
+            <li>Correo electrónico</li>
+            <li>Dirección del reclamo</li>
+            <li>Descripción del reclamo y, opcionalmente, una fotografía adjunta</li>
+        </ul>
+    </section>
 
-<h4>2. Para qué usamos estos datos</h4>
-<p>
-    Utilizamos tu información exclusivamente para:
-</p>
-<ul>
-    <li>Identificar y dar seguimiento a tus reclamos.</li>
-    <li>Asignar cada reclamo al departamento municipal correspondiente.</li>
-    <li>Enviarte notificaciones (dentro del sistema y por correo electrónico) sobre el estado de tus reclamos.</li>
-    <li>Generar estadísticas internas para mejorar los tiempos de respuesta de la Municipalidad.</li>
-</ul>
+    <section>
+        <h2 class="privacidad-titulo"><i class="bi bi-bullseye"></i>2. Para qué usamos estos datos</h2>
+        <p>
+            Utilizamos tu información exclusivamente para:
+        </p>
+        <ul>
+            <li>Identificar y dar seguimiento a tus reclamos.</li>
+            <li>Asignar cada reclamo al departamento municipal correspondiente.</li>
+            <li>Enviarte notificaciones (dentro del sistema y por correo electrónico) sobre el estado de tus reclamos.</li>
+            <li>Generar estadísticas internas para mejorar los tiempos de respuesta de la Municipalidad.</li>
+        </ul>
+    </section>
 
-<h4>3. Con quién compartimos tus datos</h4>
-<p>
-    Tus datos son visibles únicamente para el personal administrativo y los departamentos municipales
-    encargados de resolver tu reclamo. No compartimos tu información con terceros ajenos a la Municipalidad.
-</p>
+    <section>
+        <h2 class="privacidad-titulo"><i class="bi bi-people"></i>3. Con quién compartimos tus datos</h2>
+        <p>
+            Tus datos son visibles únicamente para el personal administrativo y los departamentos municipales
+            encargados de resolver tu reclamo. No compartimos tu información con terceros ajenos a la Municipalidad.
+        </p>
+    </section>
 
-<h4>4. Seguridad</h4>
-<p>
-    Tu contraseña se almacena de forma encriptada. El acceso al sistema requiere autenticación, y cada
-    usuario solo puede ver los reclamos que le corresponden según su rol (vecino, administrador o departamento).
-</p>
+    <section>
+        <h2 class="privacidad-titulo"><i class="bi bi-shield-lock"></i>4. Seguridad</h2>
+        <p>
+            Tu contraseña se almacena de forma encriptada. El acceso al sistema requiere autenticación, y cada
+            usuario solo puede ver los reclamos que le corresponden según su rol (vecino, administrador o departamento).
+        </p>
+    </section>
 
-<h4>5. Contacto</h4>
-<p>
-    Si tenés dudas sobre el uso de tus datos, podés comunicarte con la Municipalidad de Unquillo a través
-    de sus canales oficiales de contacto.
-</p>
+    <section class="mb-0">
+        <h2 class="privacidad-titulo"><i class="bi bi-envelope"></i>5. Contacto</h2>
+        <p class="mb-0">
+            Si tenés dudas sobre el uso de tus datos, podés comunicarte con la Municipalidad de Unquillo a través
+            de sus canales oficiales de contacto.
+        </p>
+    </section>
+</div>
+
+<style>
+    .privacidad {
+        max-width: 820px;
+    }
+
+        .privacidad section {
+            margin-bottom: 1.75rem;
+        }
+
+    .privacidad-titulo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+        .privacidad-titulo i {
+            color: var(--color-acento);
+        }
+</style>

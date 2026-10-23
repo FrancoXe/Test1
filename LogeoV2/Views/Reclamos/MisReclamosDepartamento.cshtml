@@ -4,61 +4,71 @@
     ViewData["Breadcrumb"] = new List<(string, string?)> { ("Mis Reclamos (Depto.)", null) };
 }
 
-<h1>Reclamos de mi Departamento</h1>
+<div class="panel">
+    <div class="panel-header flex-wrap gap-3">
+        <h1>Reclamos de mi Departamento</h1>
 
-<form method="get" asp-action="MisReclamosDepartamento" class="mb-4 d-flex gap-2 align-items-end">
-    <div>
-        <label class="form-label mb-1">Filtrar por estado</label>
-        <select name="estado" class="form-select" onchange="this.form.submit()">
-            <option value="">Todos</option>
-            @foreach (var e in Model.EstadosDisponibles)
-            {
-                <option value="@e" selected="@(Model.Estado == e)">@e</option>
-            }
-        </select>
+        <form method="get" asp-action="MisReclamosDepartamento" class="d-flex gap-2 align-items-end">
+            <div>
+                <label class="form-label mb-1 small" style="color: var(--color-texto-suave);">Filtrar por estado</label>
+                <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    @foreach (var e in Model.EstadosDisponibles)
+                    {
+                        <option value="@e" selected="@(Model.Estado == e)">@e</option>
+                    }
+                </select>
+            </div>
+        </form>
     </div>
-</form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Vecino</th>
-            <th>Categoría</th>
-            <th>Subcategoría</th>
-            <th>Barrio</th>
-            <th>Dirección</th>
-            <th>Descripción</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var r in Model.Reclamos)
-        {
-            <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
-                <td>@r.IdReclamo</td>
-                <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
-                <td>@r.Categoria?.Nombre</td>
-                <td>@r.Subcategoria?.Nombre</td>
-                <td>@r.Barrio?.Nombre</td>
-                <td>@r.Direccion</td>
-                <td>@r.Descripcion</td>
-                <td>@r.FechaCreacion.ToString("g")</td>
-                <td>
-                    <select class="form-select form-select-sm select-estado">
-                        @foreach (var e in Model.EstadosDisponibles)
-                        {
-                            <option value="@e" selected="@(e == r.Estado)">@e</option>
-                        }
-                    </select>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Vecino</th>
+                    <th>Categoría</th>
+                    <th>Subcategoría</th>
+                    <th>Barrio</th>
+                    <th>Dirección</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Reclamos)
+                {
+                    <tr data-id-reclamo="@r.IdReclamo" data-estado-original="@r.Estado">
+                        <td>@r.IdReclamo</td>
+                        <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                        <td>@r.Categoria?.Nombre</td>
+                        <td>@r.Subcategoria?.Nombre</td>
+                        <td>@r.Barrio?.Nombre</td>
+                        <td>@r.Direccion</td>
+                        <td>@r.Descripcion</td>
+                        <td>@r.FechaCreacion.ToString("g")</td>
+                        <td>
+                            <select class="form-select form-select-sm select-estado">
+                                @foreach (var e in Model.EstadosDisponibles)
+                                {
+                                    <option value="@e" selected="@(e == r.Estado)">@e</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-<button type="button" id="btnGuardarCambios" class="btn btn-primary">Guardar cambios</button>
+    <div class="mt-3 d-flex justify-content-end">
+        <button type="button" id="btnGuardarCambios" class="btn btn-primary">
+            <i class="bi bi-check2-circle me-1"></i>Guardar cambios
+        </button>
+    </div>
+</div>
 
 @section Scripts {
     <script>

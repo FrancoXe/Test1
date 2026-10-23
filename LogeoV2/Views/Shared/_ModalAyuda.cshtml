@@ -1,16 +1,18 @@
 ﻿<div class="modal fade" id="modalAyuda" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-question-circle me-2"></i>Ayuda</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle me-2" style="color: var(--color-acento);"></i>Ayuda
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <div class="accordion" id="accordionAyuda">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda1">
-                                ¿Cómo creo un nuevo reclamo?
+                                <i class="bi bi-plus-circle me-2"></i>¿Cómo creo un nuevo reclamo?
                             </button>
                         </h2>
                         <div id="ayuda1" class="accordion-collapse collapse show" data-bs-parent="#accordionAyuda">
@@ -22,7 +24,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda2">
-                                ¿Cómo veo mis reclamos?
+                                <i class="bi bi-list-check me-2"></i>¿Cómo veo mis reclamos?
                             </button>
                         </h2>
                         <div id="ayuda2" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
@@ -34,18 +36,33 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda3">
-                                ¿Cómo funciona el estado de los reclamos?
+                                <i class="bi bi-diagram-3 me-2"></i>¿Cómo funciona el estado de los reclamos?
                             </button>
                         </h2>
                         <div id="ayuda3" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
                             <div class="accordion-body">
                                 Cada reclamo pasa por distintos estados:
-                                <ul class="mb-0">
-                                    <li><strong>Pendiente:</strong> recién creado, esperando revisión.</li>
-                                    <li><strong>Aceptado:</strong> el administrador confirmó el reclamo y lo asignó al departamento correspondiente.</li>
-                                    <li><strong>Rechazado:</strong> el reclamo no fue aceptado.</li>
-                                    <li><strong>En Proceso:</strong> el departamento asignado está trabajando en la solución.</li>
-                                    <li><strong>Resuelto:</strong> el reclamo fue solucionado.</li>
+                                <ul class="list-unstyled my-2">
+                                    <li class="mb-2">
+                                        <partial name="_EstadoBadge" model="@("Pendiente")" />
+                                        recién creado, esperando revisión.
+                                    </li>
+                                    <li class="mb-2">
+                                        <partial name="_EstadoBadge" model="@("Aceptado")" />
+                                        el administrador confirmó el reclamo y lo asignó al departamento correspondiente.
+                                    </li>
+                                    <li class="mb-2">
+                                        <partial name="_EstadoBadge" model="@("Rechazado")" />
+                                        el reclamo no fue aceptado.
+                                    </li>
+                                    <li class="mb-2">
+                                        <partial name="_EstadoBadge" model="@("En Proceso")" />
+                                        el departamento asignado está trabajando en la solución.
+                                    </li>
+                                    <li>
+                                        <partial name="_EstadoBadge" model="@("Resuelto")" />
+                                        el reclamo fue solucionado.
+                                    </li>
                                 </ul>
                                 Vas a recibir una notificación (en la campanita y por correo) cada vez que cambie el estado de tu reclamo.
                             </div>
@@ -54,7 +71,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda4">
-                                ¿Cómo cambio el estado de un reclamo? (Administrador)
+                                <i class="bi bi-kanban me-2"></i>¿Cómo cambio el estado de un reclamo? (Administrador)
                             </button>
                         </h2>
                         <div id="ayuda4" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
@@ -66,7 +83,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda5">
-                                ¿Cómo recibo notificaciones?
+                                <i class="bi bi-bell me-2"></i>¿Cómo recibo notificaciones?
                             </button>
                         </h2>
                         <div id="ayuda5" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
@@ -78,7 +95,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda6">
-                                ¿Qué son las categorías y subcategorías?
+                                <i class="bi bi-tags me-2"></i>¿Qué son las categorías y subcategorías?
                             </button>
                         </h2>
                         <div id="ayuda6" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
@@ -90,7 +107,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda7">
-                                ¿Con quién me contacto si tengo un problema técnico?
+                                <i class="bi bi-headset me-2"></i>¿Con quién me contacto si tengo un problema técnico?
                             </button>
                         </h2>
                         <div id="ayuda7" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
@@ -104,3 +121,30 @@
         </div>
     </div>
 </div>
+
+<style>
+    #modalAyuda .accordion-item {
+        border-color: var(--color-borde);
+        background-color: var(--color-tarjeta);
+        color: var(--color-texto);
+    }
+
+    #modalAyuda .accordion-button {
+        font-weight: 500;
+    }
+
+        #modalAyuda .accordion-button i {
+            color: var(--color-acento);
+        }
+
+        #modalAyuda .accordion-button:not(.collapsed) {
+            background-color: var(--color-acento-suave);
+            color: var(--color-texto);
+            box-shadow: none;
+        }
+
+        #modalAyuda .accordion-button:focus {
+            border-color: var(--color-acento);
+            box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.2);
+        }
+</style>

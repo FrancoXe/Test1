@@ -1,27 +1,75 @@
 ﻿@model List<LogeoV2.Models.HistorialEstado>
 
 <div class="modal-header">
-    <h5 class="modal-title">Historial de Cambios</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <h5 class="modal-title">
+        <i class="bi bi-clock-history me-2" style="color: var(--color-acento);"></i>Historial de Cambios
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 </div>
 <div class="modal-body">
     @if (!Model.Any())
     {
-        <p class="text-muted">Este reclamo todavía no tuvo cambios de estado.</p>
+        <p class="mb-0" style="color: var(--color-texto-suave);">Este reclamo todavía no tuvo cambios de estado.</p>
     }
     else
     {
-        <ul class="list-group">
-            @foreach (var h in Model)
-            {
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <span><strong>@h.EstadoAnterior</strong> → <strong>@h.EstadoNuevo</strong></span>
-                        <span class="text-muted small">@h.FechaCambio.ToString("g")</span>
-                    </div>
-                    <div class="text-muted small">Por: @h.UsuarioQueCambio?.Nombre @h.UsuarioQueCambio?.Apellido</div>
-                </li>
-            }
-        </ul>
+
+<ul class="linea-tiempo">
+    @foreach (var h in Model)
+    {
+        <li class="linea-tiempo-item">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <span class="d-flex align-items-center gap-2 flex-wrap">
+                    <partial name="_EstadoBadge" model="@h.EstadoAnterior" />
+
+                    <i class="bi bi-arrow-right" style="color: var(--color-texto-suave);"></i>
+
+                    <partial name="_EstadoBadge" model="@h.EstadoNuevo" />
+                </span>
+
+                <span class="small" style="color: var(--color-texto-suave);">
+                    @h.FechaCambio.ToString("g")
+                </span>
+            </div>
+
+            <div class="small mt-1" style="color: var(--color-texto-suave);">
+                <i class="bi bi-person me-1"></i>
+                Por: @h.UsuarioQueCambio?.Nombre @h.UsuarioQueCambio?.Apellido
+            </div>
+        </li>
+    }
+</ul>
+
     }
 </div>
+
+<style>
+    .linea-tiempo {
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0 1.25rem;
+        border-left: 2px solid var(--color-borde);
+    }
+
+    .linea-tiempo-item {
+        position: relative;
+        padding: 0 0 1.25rem 0.75rem;
+    }
+
+        .linea-tiempo-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .linea-tiempo-item::before {
+            content: '';
+            position: absolute;
+            left: calc(-1.25rem - 6px);
+            top: 0.35rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--color-acento);
+            border: 2px solid var(--color-tarjeta);
+            box-sizing: content-box;
+        }
+</style>

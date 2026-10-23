@@ -1,33 +1,55 @@
 ﻿@model List<LogeoV2.Models.LogAuditoria>
+@{
+    var nombres = (Dictionary<int, string>)(ViewData["NombresUsuarios"] ?? new Dictionary<int, string>());
+}
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Acción</th>
-            <th>Usuario</th>
-            <th>Anterior</th>
-            <th>Nuevo</th>
-            <th>Realizado por</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var log in Model)
-        {
-            <tr>
-                <td>@log.FechaAccion.ToString("g")</td>
-                <td>@log.Accion</td>
-                <td>
-                    @{
-                        var nombres = (Dictionary<int, string>)(ViewData["NombresUsuarios"] ?? new Dictionary<int, string>());
-                        var nombreUsuario = nombres.ContainsKey(log.IdEntidad) ? nombres[log.IdEntidad] : $"#{log.IdEntidad}";
-                    }
-                         @nombreUsuario
-                </td>
-                <td>@log.DetalleAnterior</td>
-                <td>@log.DetalleNuevo</td>
-                <td>@log.UsuarioQueRealizo?.Nombre @log.UsuarioQueRealizo?.Apellido</td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (!Model.Any())
+{
+    <p class="mb-0" style="color: var(--color-texto-suave);">Todavía no hay registros de auditoría.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                    <th>Usuario</th>
+                    <th>Anterior</th>
+                    <th>Nuevo</th>
+                    <th>Realizado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    var nombreUsuario = nombres.TryGetValue(log.IdEntidad, out var n) ? n : $"#{log.IdEntidad}";
+
+                    <tr>
+                        <td class="text-nowrap">@log.FechaAccion.ToString("g")</td>
+                        <td><span class="badge-accion">@log.Accion</span></td>
+                        <td>@nombreUsuario</td>
+                        <td>@log.DetalleAnterior</td>
+                        <td>@log.DetalleNuevo</td>
+                        <td>@log.UsuarioQueRealizo?.Nombre @log.UsuarioQueRealizo?.Apellido</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<style>
+    .badge-accion {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 999px;
+        white-space: nowrap;
+        color: var(--color-texto);
+        background-color: var(--color-acento-suave);
+        border: 1px solid var(--color-acento);
+    }
+</style>

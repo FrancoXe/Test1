@@ -4,129 +4,136 @@
     ViewData["Breadcrumb"] = new List<(string, string?)> { ("Usuarios", null) };
 }
 
-<h1>Gestión de Usuarios</h1>
+<div class="panel">
+    <div class="panel-header">
+        <h1>Gestión de Usuarios</h1>
 
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-info">@TempData["Mensaje"]</div>
-}
-
-<form method="get" asp-action="Usuarios" class="mb-2">
-    <div class="d-flex align-items-center gap-2">
-        <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
-            <input type="text" name="busqueda" value="@Model.Busqueda"
-                   class="form-control border-0 ps-4" placeholder="Buscar usuario"
-                   style="box-shadow: none;" />
-            <button type="submit" class="btn btn-light border-0 px-3">
-                <i class="bi bi-search"></i>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                    id="dropdownExportar" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i> Exportar
             </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportar">
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarUsuarios"
+                       asp-route-formato="excel" asp-route-busqueda="@Model.Busqueda"
+                       asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                        Excel (.xlsx)
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarUsuarios"
+                       asp-route-formato="pdf" asp-route-busqueda="@Model.Busqueda"
+                       asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                        PDF
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarUsuarios"
+                       asp-route-formato="csv" asp-route-busqueda="@Model.Busqueda"
+                       asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
+                        CSV
+                    </a>
+                </li>
+            </ul>
         </div>
+    </div>
 
-        <div class="dropdown ms-auto">
-            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
-                    type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-sliders"></i> Filtros
-            </button>
-            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltros">
-                <div class="mb-2">
-                    <label class="form-label mb-1">Ordenar por</label>
-                    <select name="ordenarPor" class="form-select">
-                        <option value="id" selected="@(Model.OrdenarPor == "id")">ID</option>
-                        <option value="nombre" selected="@(Model.OrdenarPor == "nombre")">Nombre</option>
-                        <option value="rol" selected="@(Model.OrdenarPor == "rol")">Rol</option>
-                    </select>
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-info">@TempData["Mensaje"]</div>
+    }
+
+    <form method="get" asp-action="Usuarios" class="mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <div class="d-flex gap-2 flex-grow-1" style="max-width: 600px;">
+                <input type="text" name="busqueda" value="@Model.Busqueda"
+                       class="form-control" placeholder="Buscar usuario" />
+                <button type="submit" class="btn btn-outline-secondary px-3" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                        type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-sliders"></i> Filtros
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltros">
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Ordenar por</label>
+                        <select name="ordenarPor" class="form-select">
+                            <option value="id" selected="@(Model.OrdenarPor == "id")">ID</option>
+                            <option value="nombre" selected="@(Model.OrdenarPor == "nombre")">Nombre</option>
+                            <option value="rol" selected="@(Model.OrdenarPor == "rol")">Rol</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label mb-1">Orden</label>
+                        <select name="ascendente" class="form-select">
+                            <option value="true" selected="@(Model.Ascendente)">Ascendente</option>
+                            <option value="false" selected="@(!Model.Ascendente)">Descendente</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label mb-1">Orden</label>
-                    <select name="ascendente" class="form-select">
-                        <option value="true" selected="@(Model.Ascendente)">Ascendente</option>
-                        <option value="false" selected="@(!Model.Ascendente)">Descendente</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<div class="d-flex justify-content-end mb-4">
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                id="dropdownExportar" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download"></i> Exportar
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Correo</th>
+                    <th>Último Acceso</th>
+                    <th>Rol</th>
+                    <th>Departamento</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var usuario in Model.Usuarios)
+                {
+                    <tr data-id-usuario="@usuario.IDUsuario"
+                        data-rol-original="@usuario.IdRol"
+                        data-departamento-original="@(usuario.IdDepartamento?.ToString() ?? "")">
+                        <td>@usuario.IDUsuario</td>
+                        <td>@usuario.Nombre</td>
+                        <td>@usuario.Apellido</td>
+                        <td>@usuario.Correo</td>
+                        <td>@(usuario.UltimoAcceso?.ToString("g") ?? "Nunca")</td>
+                        <td>
+                            <select class="form-select form-select-sm select-rol">
+                                @foreach (var rol in Model.RolesDisponibles)
+                                {
+                                    <option value="@rol.IdRol" selected="@(rol.IdRol == usuario.IdRol)">@rol.NombreRol</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm select-departamento">
+                                <option value="">Sin asignar</option>
+                                @foreach (var d in Model.DepartamentosDisponibles)
+                                {
+                                    <option value="@d.IdDepartamento" selected="@(d.IdDepartamento == usuario.IdDepartamento)">@d.Nombre</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-3 d-flex justify-content-end">
+        <button type="button" id="btnGuardarCambiosUsuarios" class="btn btn-primary">
+            <i class="bi bi-check2-circle me-1"></i>Guardar cambios
         </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportar">
-            <li>
-                <a class="dropdown-item" asp-action="ExportarUsuarios"
-                   asp-route-formato="excel" asp-route-busqueda="@Model.Busqueda"
-                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
-                    Excel (.xlsx)
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" asp-action="ExportarUsuarios"
-                   asp-route-formato="pdf" asp-route-busqueda="@Model.Busqueda"
-                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
-                    PDF
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" asp-action="ExportarUsuarios"
-                   asp-route-formato="csv" asp-route-busqueda="@Model.Busqueda"
-                   asp-route-ordenarPor="@Model.OrdenarPor" asp-route-ascendente="@Model.Ascendente">
-                    CSV
-                </a>
-            </li>
-        </ul>
     </div>
 </div>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Correo</th>
-            <th>Último Acceso</th>
-            <th>Rol</th>
-            <th>Departamento</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var usuario in Model.Usuarios)
-        {
-            <tr data-id-usuario="@usuario.IDUsuario"
-                data-rol-original="@usuario.IdRol"
-                data-departamento-original="@(usuario.IdDepartamento?.ToString() ?? "")">
-                <td>@usuario.IDUsuario</td>
-                <td>@usuario.Nombre</td>
-                <td>@usuario.Apellido</td>
-                <td>@usuario.Correo</td>
-                <td>@(usuario.UltimoAcceso?.ToString("g") ?? "Nunca")</td>
-                <td>
-                    <select class="form-select form-select-sm select-rol">
-                        @foreach (var rol in Model.RolesDisponibles)
-                        {
-                            <option value="@rol.IdRol" selected="@(rol.IdRol == usuario.IdRol)">@rol.NombreRol</option>
-                        }
-                    </select>
-                </td>
-                <td>
-                    <select class="form-select form-select-sm select-departamento">
-                        <option value="">Sin asignar</option>
-                        @foreach (var d in Model.DepartamentosDisponibles)
-                        {
-                            <option value="@d.IdDepartamento" selected="@(d.IdDepartamento == usuario.IdDepartamento)">@d.Nombre</option>
-                        }
-                    </select>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<button type="button" id="btnGuardarCambiosUsuarios" class="btn btn-primary">Guardar cambios</button>
 
 @section Scripts {
     <script>

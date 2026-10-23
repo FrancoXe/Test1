@@ -12,237 +12,365 @@
     var cantidadesDeptoPendJson = System.Text.Json.JsonSerializer.Serialize(Model.PorDepartamentoPendientes.Select(d => d.Cantidad));
 }
 
-<h1>Reportes</h1>
+<div class="panel">
+    <div class="panel-header flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <h1>Reportes</h1>
+            @if (Model.FechaDesde.HasValue || Model.FechaHasta.HasValue)
+            {
+                <span class="periodo-activo">
+                    <i class="bi bi-calendar3 me-1"></i>@(Model.FechaDesde?.ToString("dd/MM/yyyy") ?? "inicio") – @(Model.FechaHasta?.ToString("dd/MM/yyyy") ?? "hoy")
+                </span>
+            }
+        </div>
 
-<form method="get" asp-action="Metricas" class="mb-4">
-    <div class="d-flex align-items-center gap-2">
-        <div class="dropdown ms-auto">
-            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
-                    type="button" id="dropdownFiltrosMetricas" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-sliders"></i> Filtros
-            </button>
-            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltrosMetricas">
-                <div class="mb-2">
-                    <label class="form-label mb-1">Desde</label>
-                    <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+        <div class="d-flex align-items-center gap-2">
+            <form method="get" asp-action="Metricas" class="m-0">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                            type="button" id="dropdownFiltrosMetricas" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-sliders"></i> Filtros
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 280px;" aria-labelledby="dropdownFiltrosMetricas">
+                        <div class="mb-2">
+                            <label class="form-label mb-1">Desde</label>
+                            <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Hasta</label>
+                            <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label mb-1">Hasta</label>
-                    <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
-            </div>
-        </div>
-    </div>
-</form>
-
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center p-3">
-            <div class="text-muted small">Total de reclamos</div>
-            <div class="fs-2 fw-bold">@Model.TotalReclamos</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3">
-            <div class="text-muted small">Resueltos</div>
-            <div class="fs-2 fw-bold text-success">@Model.TotalResueltos</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3">
-            <div class="text-muted small">Pendientes / en curso</div>
-            <div class="fs-2 fw-bold text-warning">@Model.TotalPendientes</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3">
-            <div class="text-muted small">Promedio de resolución</div>
-            <div class="fs-2 fw-bold">@Model.TiempoPromedioResolucionDias.ToString("F1") días</div>
-        </div>
-    </div>
-</div>
-
-<ul class="nav nav-tabs mb-3" id="tabsMetricas" role="tablist">
-    <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabResumen" type="button">Resumen</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMotivo" type="button">Motivo</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDepartamento" type="button">Departamento</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBarrio" type="button">Barrio</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTendencia" type="button">Tendencia</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNotificaciones" type="button">Notificaciones</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLogs" type="button">Logs</button></li>
-</ul>
-
-<div class="tab-content">
-    <div class="tab-pane fade show active" id="tabResumen">
-        <div class="row">
-            <div class="col-md-6"><canvas id="chartResumen" style="max-height: 350px;"></canvas></div>
-            <div class="col-md-6">
-                <table class="table">
-                    <tbody>
-                        <tr><td>Resueltos</td><td class="fw-bold">@Model.TotalResueltos</td></tr>
-                        <tr><td>Pendientes / en curso</td><td class="fw-bold">@Model.TotalPendientes</td></tr>
-                        <tr><td>Total</td><td class="fw-bold">@Model.TotalReclamos</td></tr>
-                        <tr><td>Promedio de resolución</td><td class="fw-bold">@Model.TiempoPromedioResolucionDias.ToString("F1") días</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="tab-pane fade" id="tabMotivo">
-        <div class="row">
-            <div class="col-md-6"><canvas id="chartMotivo" style="max-height: 400px;"></canvas></div>
-            <div class="col-md-6">
-                <table class="table">
-                    <tbody>
-                        @foreach (var c in Model.PorCategoria)
-                        {
-                            <tr><td>@c.Nombre</td><td class="fw-bold">@c.Cantidad</td><td class="text-muted">@c.PromedioDias.ToString("F1") días</td></tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="tab-pane fade" id="tabDepartamento">
-        <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="checkSoloPendientesDepto">
-            <label class="form-check-label" for="checkSoloPendientesDepto">Mostrar solo reclamos pendientes</label>
-        </div>
-        <div class="row">
-            <div class="col-md-6"><canvas id="chartDepartamento" style="max-height: 400px;"></canvas></div>
-            <div class="col-md-6">
-                <table class="table" id="tablaDepartamento">
-                    <tbody>
-                        @foreach (var d in Model.PorDepartamento)
-                        {
-                            <tr><td>@d.Nombre</td><td class="fw-bold">@d.Cantidad</td><td class="text-muted">@d.PromedioDias.ToString("F1") días</td></tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="tab-pane fade" id="tabBarrio">
-        <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
-            <select id="selectVistaBarrio" class="form-select" style="max-width: 280px;">
-                <option value="cantidad">Cantidad por barrio</option>
-                <option value="estado">Estado actual por barrio</option>
-                <option value="motivo">Motivo de reclamo por barrio</option>
-            </select>
+            </form>
 
             <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                        id="dropdownBarriosSeleccion" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span id="textoBarriosSeleccionados">Todos los barrios</span>
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownExportarMetricas" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i> Exportar
                 </button>
-                <div class="dropdown-menu p-3 shadow" style="width: 240px; max-height: 280px; overflow-y: auto;">
-                    <div class="form-check mb-2 border-bottom pb-2">
-                        <input class="form-check-input" type="checkbox" id="checkTodosBarrios" checked>
-                        <label class="form-check-label fw-bold" for="checkTodosBarrios">Todos los barrios</label>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportarMetricas">
+                    <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="excel" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">Excel (.xlsx)</a></li>
+                    <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="pdf" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">PDF</a></li>
+                    <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="csv" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="kpi">
+                <div class="kpi-label">Total de reclamos</div>
+                <div class="kpi-valor">@Model.TotalReclamos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi kpi-resuelto">
+                <div class="kpi-label">Resueltos</div>
+                <div class="kpi-valor">@Model.TotalResueltos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi kpi-pendiente">
+                <div class="kpi-label">Pendientes / en curso</div>
+                <div class="kpi-valor">@Model.TotalPendientes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi">
+                <div class="kpi-label">Promedio de resolución</div>
+                <div class="kpi-valor">@Model.TiempoPromedioResolucionDias.ToString("F1") <span class="kpi-unidad">días</span></div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="tabsMetricas" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabResumen" type="button">Resumen</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMotivo" type="button">Motivo</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDepartamento" type="button">Departamento</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBarrio" type="button">Barrio</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTendencia" type="button">Tendencia</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNotificaciones" type="button">Notificaciones</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabLogs" type="button">Logs</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tabResumen">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-6"><canvas id="chartResumen" style="max-height: 350px;"></canvas></div>
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                <tr><td>Resueltos</td><td class="fw-bold">@Model.TotalResueltos</td></tr>
+                                <tr><td>Pendientes / en curso</td><td class="fw-bold">@Model.TotalPendientes</td></tr>
+                                <tr><td>Total</td><td class="fw-bold">@Model.TotalReclamos</td></tr>
+                                <tr><td>Promedio de resolución</td><td class="fw-bold">@Model.TiempoPromedioResolucionDias.ToString("F1") días</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div id="listaCheckboxBarrios"></div>
-                    <button type="button" id="btnAplicarBarrios" class="btn btn-primary btn-sm w-100 mt-2">Aplicar</button>
                 </div>
             </div>
         </div>
 
-        <div id="vistaCantidadBarrio">
-            <div class="row">
-                <div class="col-md-6"><canvas id="chartBarrio" style="max-height: 400px;"></canvas></div>
-                <div class="col-md-6"><table class="table"><tbody id="tbodyBarrioCantidad"></tbody></table></div>
-            </div>
-        </div>
-
-        <div id="vistaEstadoBarrio" class="d-none">
-            <table class="table table-striped">
-                <thead><tr><th>Barrio</th><th>Pendiente</th><th>Aceptado</th><th>En Proceso</th><th>Resuelto</th><th>Rechazado</th></tr></thead>
-                <tbody id="tbodyEstadoBarrio">
-                    @foreach (var e in Model.EstadoPorBarrio)
-                    {
-                        <tr><td>@e.Barrio</td><td>@e.Pendiente</td><td>@e.Aceptado</td><td>@e.EnProceso</td><td>@e.Resuelto</td><td>@e.Rechazado</td></tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <div id="vistaMotivoBarrio" class="d-none">
-            <table class="table table-striped">
-                <thead><tr><th>Barrio</th><th>Categoría</th><th>Cantidad</th></tr></thead>
-                <tbody id="tbodyMotivoBarrio">
-                    @foreach (var b in Model.MotivoPorBarrio)
-                    {
-                        @foreach (var c in b.Categorias)
-                        {
-                            <tr><td>@b.Barrio</td><td>@c.Categoria</td><td class="fw-bold">@c.Cantidad</td></tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="tab-pane fade" id="tabTendencia">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <div class="card p-3">
-                    <label class="form-label fw-bold">Ver por</label>
-                    <select id="selectGranularidad" class="form-select mb-3">
-                        <option value="anio">Año completo (mensual)</option>
-                        <option value="mes">Mes específico (diario)</option>
-                    </select>
-                    <div id="contenedorSelectorAnio">
-                        <label class="form-label fw-bold">Años a comparar</label>
-                        <div id="listaCheckboxAnios" class="mb-2"></div>
+        <div class="tab-pane fade" id="tabMotivo">
+            <div class="row g-4">
+                <div class="col-md-6"><canvas id="chartMotivo" style="max-height: 400px;"></canvas></div>
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                @foreach (var c in Model.PorCategoria)
+                                {
+                                    <tr><td>@c.Nombre</td><td class="fw-bold">@c.Cantidad</td><td class="texto-suave">@c.PromedioDias.ToString("F1") días</td></tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
-                    <div id="contenedorSelectorMes" class="d-none">
-                        <label class="form-label fw-bold">Agregar mes</label>
-                        <input type="month" id="inputMesEspecifico" class="form-control mb-2" />
-                        <button type="button" id="btnAgregarMes" class="btn btn-outline-secondary btn-sm w-100 mb-2">+ Agregar</button>
-                        <div id="listaMesesSeleccionados" class="d-flex flex-wrap gap-2 mb-2"></div>
-                    </div>
-                    <button type="button" id="btnActualizarTendencia" class="btn btn-primary w-100 mt-2">Actualizar gráfico</button>
                 </div>
             </div>
-            <div class="col-md-9"><div class="card p-3"><canvas id="chartTendencia" style="max-height: 420px;"></canvas></div></div>
         </div>
-    </div>
 
-    <div class="tab-pane fade" id="tabNotificaciones">
-        <div class="row">
-            <div class="col-md-6"><canvas id="chartNotificaciones" style="max-height: 350px;"></canvas></div>
-            <div class="col-md-6">
-                <table class="table">
-                    <tbody>
-                        <tr><td>Notificados</td><td class="fw-bold">@Model.Notificaciones.Notificados</td></tr>
-                        <tr><td>No notificados</td><td class="fw-bold">@Model.Notificaciones.NoNotificados</td></tr>
-                        <tr><td>Total</td><td class="fw-bold">@Model.Notificaciones.TotalReclamos</td></tr>
-                    </tbody>
-                </table>
+        <div class="tab-pane fade" id="tabDepartamento">
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="checkSoloPendientesDepto">
+                <label class="form-check-label" for="checkSoloPendientesDepto">Mostrar solo reclamos pendientes</label>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6"><canvas id="chartDepartamento" style="max-height: 400px;"></canvas></div>
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table mb-0" id="tablaDepartamento">
+                            <tbody>
+                                @foreach (var d in Model.PorDepartamento)
+                                {
+                                    <tr><td>@d.Nombre</td><td class="fw-bold">@d.Cantidad</td><td class="texto-suave">@d.PromedioDias.ToString("F1") días</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="tab-pane fade" id="tabLogs">
-        <div id="contenidoLogs"><div class="text-center py-4"><div class="spinner-border"></div></div></div>
+        <div class="tab-pane fade" id="tabBarrio">
+            <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+                <select id="selectVistaBarrio" class="form-select" style="max-width: 280px;">
+                    <option value="cantidad">Cantidad por barrio</option>
+                    <option value="estado">Estado actual por barrio</option>
+                    <option value="motivo">Motivo de reclamo por barrio</option>
+                </select>
+
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            id="dropdownBarriosSeleccion" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span id="textoBarriosSeleccionados">Todos los barrios</span>
+                    </button>
+                    <div class="dropdown-menu p-3 shadow" style="width: 240px; max-height: 280px; overflow-y: auto;">
+                        <div class="form-check mb-2 border-bottom pb-2">
+                            <input class="form-check-input" type="checkbox" id="checkTodosBarrios" checked>
+                            <label class="form-check-label fw-bold" for="checkTodosBarrios">Todos los barrios</label>
+                        </div>
+                        <div id="listaCheckboxBarrios"></div>
+                        <button type="button" id="btnAplicarBarrios" class="btn btn-primary btn-sm w-100 mt-2">Aplicar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vistaCantidadBarrio">
+                <div class="row g-4">
+                    <div class="col-md-6"><canvas id="chartBarrio" style="max-height: 400px;"></canvas></div>
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table mb-0"><tbody id="tbodyBarrioCantidad"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vistaEstadoBarrio" class="d-none">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Barrio</th>
+                                <th><span class="estado estado-pendiente">Pendiente</span></th>
+                                <th><span class="estado estado-aceptado">Aceptado</span></th>
+                                <th><span class="estado estado-en-proceso">En Proceso</span></th>
+                                <th><span class="estado estado-resuelto">Resuelto</span></th>
+                                <th><span class="estado estado-rechazado">Rechazado</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyEstadoBarrio">
+                            @foreach (var e in Model.EstadoPorBarrio)
+                            {
+                                <tr><td>@e.Barrio</td><td>@e.Pendiente</td><td>@e.Aceptado</td><td>@e.EnProceso</td><td>@e.Resuelto</td><td>@e.Rechazado</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="vistaMotivoBarrio" class="d-none">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead><tr><th>Barrio</th><th>Categoría</th><th>Cantidad</th></tr></thead>
+                        <tbody id="tbodyMotivoBarrio">
+                            @foreach (var b in Model.MotivoPorBarrio)
+                            {
+                                @foreach (var c in b.Categorias)
+                                {
+                                    <tr><td>@b.Barrio</td><td>@c.Categoria</td><td class="fw-bold">@c.Cantidad</td></tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tabTendencia">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <label class="form-label fw-bold">Ver por</label>
+                        <select id="selectGranularidad" class="form-select mb-3">
+                            <option value="anio">Año completo (mensual)</option>
+                            <option value="mes">Mes específico (diario)</option>
+                        </select>
+                        <div id="contenedorSelectorAnio">
+                            <label class="form-label fw-bold">Años a comparar</label>
+                            <div id="listaCheckboxAnios" class="mb-2"></div>
+                        </div>
+                        <div id="contenedorSelectorMes" class="d-none">
+                            <label class="form-label fw-bold">Agregar mes</label>
+                            <input type="month" id="inputMesEspecifico" class="form-control mb-2" />
+                            <button type="button" id="btnAgregarMes" class="btn btn-outline-secondary btn-sm w-100 mb-2">+ Agregar</button>
+                            <div id="listaMesesSeleccionados" class="d-flex flex-wrap gap-2 mb-2"></div>
+                        </div>
+                        <button type="button" id="btnActualizarTendencia" class="btn btn-primary w-100 mt-2">Actualizar gráfico</button>
+                    </div>
+                </div>
+                <div class="col-md-9"><div class="card p-3"><canvas id="chartTendencia" style="max-height: 420px;"></canvas></div></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tabNotificaciones">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-6"><canvas id="chartNotificaciones" style="max-height: 350px;"></canvas></div>
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                <tr><td>Notificados</td><td class="fw-bold">@Model.Notificaciones.Notificados</td></tr>
+                                <tr><td>No notificados</td><td class="fw-bold">@Model.Notificaciones.NoNotificados</td></tr>
+                                <tr><td>Total</td><td class="fw-bold">@Model.Notificaciones.TotalReclamos</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tabLogs">
+            <div id="contenidoLogs"><div class="text-center py-4"><div class="spinner-border"></div></div></div>
+        </div>
     </div>
 </div>
 
-<div class="d-flex justify-content-end mt-3">
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownExportarMetricas" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download"></i> Exportar
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportarMetricas">
-            <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="excel" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">Excel (.xlsx)</a></li>
-            <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="pdf" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">PDF</a></li>
-            <li><a class="dropdown-item" asp-action="ExportarMetricas" asp-route-formato="csv" asp-route-fechaDesde="@Model.FechaDesde" asp-route-fechaHasta="@Model.FechaHasta">CSV</a></li>
-        </ul>
-    </div>
-</div>
+<style>
+    .periodo-activo {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--color-acento);
+        background-color: var(--color-acento-suave);
+        border: 1px solid var(--color-acento);
+    }
+
+    .kpi {
+        height: 100%;
+        padding: 1rem 1.25rem;
+        background-color: var(--color-tarjeta-header);
+        border: 1px solid var(--color-borde);
+        border-left: 3px solid var(--color-acento);
+        border-radius: var(--radio-md);
+    }
+
+    /* Los KPI de estado usan la misma paleta que los badges de estado */
+    .kpi-resuelto {
+        border-left-color: rgb(var(--estado-resuelto-rgb));
+    }
+
+        .kpi-resuelto .kpi-valor {
+            color: var(--estado-resuelto-texto);
+        }
+
+    .kpi-pendiente {
+        border-left-color: rgb(var(--estado-proceso-rgb));
+    }
+
+        .kpi-pendiente .kpi-valor {
+            color: var(--estado-proceso-texto);
+        }
+
+    .kpi-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-texto-suave);
+        margin-bottom: 0.25rem;
+    }
+
+    .kpi-valor {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .kpi-unidad {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--color-texto-suave);
+    }
+
+    .texto-suave {
+        color: var(--color-texto-suave);
+    }
+
+    /* Las píldoras de estado en los encabezados de tabla se ven en minúscula, como en el resto de la app */
+    .table thead th .estado {
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    #tabsMetricas {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+        #tabsMetricas .nav-link {
+            white-space: nowrap;
+        }
+
+    .chip-mes {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 999px;
+        color: var(--color-texto);
+        background-color: var(--color-acento-suave);
+        border: 1px solid var(--color-acento);
+    }
+</style>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -257,18 +385,94 @@
     <script>
         const datosMetricas = JSON.parse(document.getElementById('datosMetricas').textContent);
 
+        // ===== TEMA DE GRÁFICOS (lee las variables del sistema de diseño) =====
+        function cssVar(nombre) {
+            return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+        }
+
+        // Colores de estado: salen de las mismas variables que usan los badges (site.css)
+        function colorEstado(nombre) {
+            return 'rgb(' + cssVar('--estado-' + nombre + '-rgb') + ')';
+        }
+
+        function aplicarTemaCharts() {
+            Chart.defaults.color = cssVar('--color-texto');
+            Chart.defaults.borderColor = cssVar('--color-borde');
+        }
+
+        aplicarTemaCharts();
+
+        const COLOR_ACENTO = cssVar('--color-acento');
+        const COLOR_RESUELTO = colorEstado('resuelto');
+        const COLOR_EN_CURSO = colorEstado('proceso');
+        const COLOR_NEUTRO = '#6c757d';
+
+        // Cada gráfico define sus colores de forma explícita, así se pueden reescribir al cambiar de tema
+        function crearEscalas() {
+            const texto = cssVar('--color-texto');
+            const borde = cssVar('--color-borde');
+            return {
+                x: { beginAtZero: true, ticks: { stepSize: 1, color: texto }, grid: { color: borde }, border: { color: borde } },
+                y: { ticks: { color: texto }, grid: { color: borde }, border: { color: borde } }
+            };
+        }
+
+        function crearLeyenda() {
+            return { position: 'bottom', labels: { color: cssVar('--color-texto') } };
+        }
+
+        function recolorearChart(chart) {
+            const texto = cssVar('--color-texto');
+            const borde = cssVar('--color-borde');
+            const fondoTarjeta = cssVar('--color-tarjeta');
+
+            if (chart.options.scales) {
+                Object.values(chart.options.scales).forEach(function (escala) {
+                    if (escala.ticks) escala.ticks.color = texto;
+                    if (escala.grid) escala.grid.color = borde;
+                    if (escala.border) escala.border.color = borde;
+                });
+            }
+
+            if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                chart.options.plugins.legend.labels.color = texto;
+            }
+
+            if (chart.config.type === 'pie') {
+                chart.data.datasets.forEach(function (d) { d.borderColor = fondoTarjeta; });
+            }
+
+            chart.update();
+        }
+
+        new MutationObserver(function () {
+            aplicarTemaCharts();
+            Object.values(Chart.instances).forEach(recolorearChart);
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
+
+        // ===== RESUMEN =====
         const chartResumenObj = new Chart(document.getElementById('chartResumen'), {
             type: 'pie',
-            data: { labels: ['Resueltos', 'Pendientes / en curso'], datasets: [{ data: [@Model.TotalResueltos, @Model.TotalPendientes], backgroundColor: ['#198754', '#ffc107'] }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            data: {
+                labels: ['Resueltos', 'Pendientes / en curso'],
+                datasets: [{
+                    data: [@Model.TotalResueltos, @Model.TotalPendientes],
+                    backgroundColor: [COLOR_RESUELTO, COLOR_EN_CURSO],
+                    borderColor: cssVar('--color-tarjeta'),
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: crearLeyenda() } }
         });
 
+        // ===== MOTIVO =====
         const chartMotivoObj = new Chart(document.getElementById('chartMotivo'), {
             type: 'bar',
-            data: { labels: datosMetricas.categorias, datasets: [{ label: 'Cantidad', data: datosMetricas.cantidades, backgroundColor: '#0d6efd' }] },
-            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            data: { labels: datosMetricas.categorias, datasets: [{ label: 'Cantidad', data: datosMetricas.cantidades, backgroundColor: COLOR_ACENTO, borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: crearEscalas() }
         });
 
+        // ===== DEPARTAMENTO =====
         let chartDepartamentoActual = null;
         function renderChartDepartamento(usarPendientes) {
             const labels = usarPendientes ? datosMetricas.departamentosPend : datosMetricas.departamentos;
@@ -276,8 +480,8 @@
             if (chartDepartamentoActual) chartDepartamentoActual.destroy();
             chartDepartamentoActual = new Chart(document.getElementById('chartDepartamento'), {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Cantidad', data: datos, backgroundColor: '#6f42c1' }] },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                data: { labels: labels, datasets: [{ label: 'Cantidad', data: datos, backgroundColor: COLOR_ACENTO, borderRadius: 4 }] },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: crearEscalas() }
             });
         }
         renderChartDepartamento(false);
@@ -291,14 +495,14 @@
             if (chartBarrioObj) chartBarrioObj.destroy();
             chartBarrioObj = new Chart(document.getElementById('chartBarrio'), {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: '#20c997' }] },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                data: { labels: labels, datasets: [{ label: 'Cantidad', data: cantidades, backgroundColor: COLOR_ACENTO, borderRadius: 4 }] },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: crearEscalas() }
             });
         }
 
         function renderTablaCantidad(data) {
             document.getElementById('tbodyBarrioCantidad').innerHTML =
-                data.map(b => `<tr><td>${b.nombre}</td><td class="fw-bold">${b.cantidad}</td><td class="text-muted">${b.promedioDias.toFixed(1)} días</td></tr>`).join('');
+                data.map(b => `<tr><td>${b.nombre}</td><td class="fw-bold">${b.cantidad}</td><td class="texto-suave">${b.promedioDias.toFixed(1)} días</td></tr>`).join('');
             renderChartBarrio(data.map(b => b.nombre), data.map(b => b.cantidad));
         }
 
@@ -379,8 +583,16 @@
         // ===== NOTIFICACIONES =====
         const chartNotificacionesObj = new Chart(document.getElementById('chartNotificaciones'), {
             type: 'pie',
-            data: { labels: ['Notificados', 'No notificados'], datasets: [{ data: [@Model.Notificaciones.Notificados, @Model.Notificaciones.NoNotificados], backgroundColor: ['#0d6efd', '#dc3545'] }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            data: {
+                labels: ['Notificados', 'No notificados'],
+                datasets: [{
+                    data: [@Model.Notificaciones.Notificados, @Model.Notificaciones.NoNotificados],
+                    backgroundColor: [COLOR_ACENTO, COLOR_NEUTRO],
+                    borderColor: cssVar('--color-tarjeta'),
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: crearLeyenda() } }
         });
 
         // ===== TENDENCIA =====
@@ -423,7 +635,7 @@
                 const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
                 const etiqueta = `${nombresMeses[parseInt(mes) - 1]} ${anio}`;
                 const chip = document.createElement('span');
-                chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-2';
+                chip.className = 'chip-mes';
                 chip.innerHTML = `${etiqueta} <button type="button" class="btn-close" style="font-size: 0.55rem;"></button>`;
                 chip.querySelector('button').addEventListener('click', function () { mesesSeleccionados = mesesSeleccionados.filter(p => p !== periodo); actualizarListaMeses(); });
                 contenedor.appendChild(chip);
@@ -436,12 +648,13 @@
             fetch('@Url.Action("ObtenerTendencia", "Reclamos")?periodos=' + encodeURIComponent(periodos.join(',')))
                 .then(res => res.json())
                 .then(data => {
-                    const colores = ['#0d6efd', '#dc3545', '#198754', '#fd7e14', '#6f42c1', '#20c997'];
+                    // Paleta sin verde, amarillo, rojo ni celeste: esos colores quedan reservados para los estados
+                    const colores = [COLOR_ACENTO, '#6f42c1', '#0d6efd', '#d63384', '#795548', '#adb5bd'];
                     if (chartTendencia) chartTendencia.destroy();
                     chartTendencia = new Chart(document.getElementById('chartTendencia'), {
                         type: 'line',
-                        data: { labels: data.labels, datasets: data.series.map((s, i) => ({ label: s.nombre, data: s.datos, borderColor: colores[i % colores.length], backgroundColor: colores[i % colores.length], tension: 0.2, fill: false })) },
-                        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                        data: { labels: data.labels, datasets: data.series.map((s, i) => ({ label: s.nombre, data: s.datos, borderColor: colores[i % colores.length], backgroundColor: colores[i % colores.length], tension: 0.3, fill: false, pointRadius: 3 })) },
+                        options: { responsive: true, plugins: { legend: crearLeyenda() }, scales: crearEscalas() }
                     });
                 });
         });

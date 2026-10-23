@@ -4,59 +4,56 @@
     ViewData["Breadcrumb"] = new List<(string, string?)> { ("Mis Reclamos", null) };
 }
 
-<h1>Mis Reclamos</h1>
+<div class="panel">
+    <div class="panel-header">
+        <h1>Mis Reclamos</h1>
+    </div>
 
-@if (!Model.Any())
-{
-    <p class="text-muted">Todavía no creaste ningún reclamo.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Categoría</th>
-                <th>Subcategoría</th>
-                <th>Barrio</th>
-                <th>Dirección</th>
-                <th>Descripción</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var r in Model)
-            {
-                var claseEstado = r.Estado switch
-                {
-                    "Aceptado" => "text-success",
-                    "Rechazado" => "text-danger",
-                    "En Proceso" => "text-warning",
-                    "Resuelto" => "text-primary",
-                    _ => "text-secondary"
-                };
-
-                <tr>
-                    <td>@r.IdReclamo</td>
-                    <td>@r.Categoria?.Nombre</td>
-                    <td>@r.Subcategoria?.Nombre</td>
-                    <td>@r.Barrio?.Nombre</td>
-                    <td>@r.Direccion</td>
-                    <td>@r.Descripcion</td>
-                    <td>@r.FechaCreacion.ToString("g")</td>
-                    <td class="@claseEstado fw-bold">@r.Estado</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
-                                style="width: 32px; height: 32px; padding: 0;"
-                                title="Ver más"
-                                onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (!Model.Any())
+    {
+        <p class="mb-0" style="color: var(--color-texto-suave);">Todavía no creaste ningún reclamo.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Categoría</th>
+                        <th>Subcategoría</th>
+                        <th>Barrio</th>
+                        <th>Dirección</th>
+                        <th>Descripción</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>@r.IdReclamo</td>
+                            <td>@r.Categoria?.Nombre</td>
+                            <td>@r.Subcategoria?.Nombre</td>
+                            <td>@r.Barrio?.Nombre</td>
+                            <td>@r.Direccion</td>
+                            <td>@r.Descripcion</td>
+                            <td>@r.FechaCreacion.ToString("g")</td>
+                            <td><partial name="_EstadoBadge" model="@r.Estado" /></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle"
+                                        style="width: 32px; height: 32px; padding: 0;"
+                                        title="Ver más"
+                                        onclick="window.open('@Url.Action("VerDetallePdf", new { id = r.IdReclamo })', '_blank')">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

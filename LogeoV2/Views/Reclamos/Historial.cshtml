@@ -4,150 +4,157 @@
     ViewData["Breadcrumb"] = new List<(string, string?)> { ("Historial", null) };
 }
 
-<h1>Historial de Reclamos</h1>
+<div class="panel">
+    <div class="panel-header">
+        <h1>Historial de Reclamos</h1>
 
-<form method="get" asp-action="Historial" class="mb-2">
-    <div class="d-flex align-items-center gap-2">
-        <div class="input-group rounded-pill overflow-hidden flex-grow-1" style="max-width: 600px;">
-            <input type="text" name="busqueda" value="@Model.Busqueda"
-                   class="form-control border-0 ps-4" placeholder="Buscar por DNI o vecino"
-                   style="box-shadow: none;" />
-            <button type="submit" class="btn btn-light border-0 px-3">
-                <i class="bi bi-search"></i>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                    id="dropdownExportarHistorial" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i> Exportar
             </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportarHistorial">
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="excel"
+                       asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
+                       asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
+                       asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
+                        Excel (.xlsx)
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="pdf"
+                       asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
+                       asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
+                       asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
+                        PDF
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="csv"
+                       asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
+                       asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
+                       asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
+                        CSV
+                    </a>
+                </li>
+            </ul>
         </div>
+    </div>
 
-        <div class="dropdown ms-auto">
-            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
-                    type="button" id="dropdownFiltrosHistorial" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-sliders"></i> Filtros
-            </button>
-            <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 300px;" aria-labelledby="dropdownFiltrosHistorial">
-                <div class="mb-2">
-                    <label class="form-label mb-1">Estado</label>
-                    <select name="estado" class="form-select">
-                        <option value="">Todos</option>
-                        @foreach (var e in Model.EstadosDisponibles)
-                        {
-                            <option value="@e" selected="@(Model.Estado == e)">@e</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label mb-1">Categoría</label>
-                    <select name="idCategoria" class="form-select">
-                        <option value="">Todas</option>
-                        @foreach (var c in Model.Categorias)
-                        {
-                            <option value="@c.IdCategoria" selected="@(Model.IdCategoria == c.IdCategoria)">@c.Nombre</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label mb-1">Barrio</label>
-                    <select name="idBarrio" class="form-select">
-                        <option value="">Todos</option>
-                        @foreach (var b in Model.Barrios)
-                        {
-                            <option value="@b.IdBarrio" selected="@(Model.IdBarrio == b.IdBarrio)">@b.Nombre</option>
-                        }
-                    </select>
-                </div>
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label mb-1">Desde</label>
-                        <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+    <form method="get" asp-action="Historial" class="mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <div class="d-flex gap-2 flex-grow-1" style="max-width: 600px;">
+                <input type="text" name="busqueda" value="@Model.Busqueda"
+                       class="form-control" placeholder="Buscar por DNI o vecino" />
+                <button type="submit" class="btn btn-outline-secondary px-3" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1"
+                        type="button" id="dropdownFiltrosHistorial" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-sliders"></i> Filtros
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 300px;" aria-labelledby="dropdownFiltrosHistorial">
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            @foreach (var e in Model.EstadosDisponibles)
+                            {
+                                <option value="@e" selected="@(Model.Estado == e)">@e</option>
+                            }
+                        </select>
                     </div>
-                    <div class="col-6">
-                        <label class="form-label mb-1">Hasta</label>
-                        <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Categoría</label>
+                        <select name="idCategoria" class="form-select">
+                            <option value="">Todas</option>
+                            @foreach (var c in Model.Categorias)
+                            {
+                                <option value="@c.IdCategoria" selected="@(Model.IdCategoria == c.IdCategoria)">@c.Nombre</option>
+                            }
+                        </select>
                     </div>
+                    <div class="mb-2">
+                        <label class="form-label mb-1">Barrio</label>
+                        <select name="idBarrio" class="form-select">
+                            <option value="">Todos</option>
+                            @foreach (var b in Model.Barrios)
+                            {
+                                <option value="@b.IdBarrio" selected="@(Model.IdBarrio == b.IdBarrio)">@b.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label mb-1">Desde</label>
+                            <input type="date" name="fechaDesde" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label mb-1">Hasta</label>
+                            <input type="date" name="fechaHasta" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" class="form-control" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm w-100">Aplicar filtros</button>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<div class="d-flex justify-content-end mb-3">
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                id="dropdownExportarHistorial" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download"></i> Exportar
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownExportarHistorial">
-            <li>
-                <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="excel"
-                   asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
-                   asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
-                   asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
-                    Excel (.xlsx)
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="pdf"
-                   asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
-                   asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
-                   asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
-                    PDF
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" asp-action="ExportarHistorial" asp-route-formato="csv"
-                   asp-route-estado="@Model.Estado" asp-route-idCategoria="@Model.IdCategoria"
-                   asp-route-idBarrio="@Model.IdBarrio" asp-route-fechaDesde="@Model.FechaDesde"
-                   asp-route-fechaHasta="@Model.FechaHasta" asp-route-busqueda="@Model.Busqueda">
-                    CSV
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>DNI</th>
+                    <th>Vecino</th>
+                    <th>Categoría</th>
+                    <th>Subcategoría</th>
+                    <th>Barrio</th>
+                    <th>Dirección</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>DNI</th>
-            <th>Vecino</th>
-            <th>Categoría</th>
-            <th>Subcategoría</th>
-            <th>Barrio</th>
-            <th>Dirección</th>
-            <th>Descripción</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var r in Model.Reclamos)
-        {
-            <tr>
-                <td>@r.IdReclamo</td>
-                <td>@r.DNI</td>
-                <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
-                <td>@r.Categoria?.Nombre</td>
-                <td>@r.Subcategoria?.Nombre</td>
-                <td>@r.Barrio?.Nombre</td>
-                <td>@r.Direccion</td>
-                <td>@r.Descripcion</td>
-                <td>@r.FechaCreacion.ToString("g")</td>
-                <td>@r.Estado</td>
-            </tr>
+                @foreach (var r in Model.Reclamos)
+                {
+                    <tr>
+                        <td>@r.IdReclamo</td>
+                        <td>@r.DNI</td>
+                        <td>@r.Usuario?.Nombre @r.Usuario?.Apellido</td>
+                        <td>@r.Categoria?.Nombre</td>
+                        <td>@r.Subcategoria?.Nombre</td>
+                        <td>@r.Barrio?.Nombre</td>
+                        <td>@r.Direccion</td>
+                        <td>@r.Descripcion</td>
+                        <td>@r.FechaCreacion.ToString("g")</td>
+                        <td>
+                            <partial name="_EstadoBadge" model="@r.Estado" />
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Paginacion" model="@(new LogeoV2.ViewModels.PaginacionParams {
+        PaginaActual = Model.PaginaActual,
+        TotalPaginas = Model.TotalPaginas,
+        AccionUrl = Url.Action("Historial", "Reclamos") ?? "",
+        ParametrosExtra = new Dictionary<string, string?> {
+            { "estado", Model.Estado },
+            { "idCategoria", Model.IdCategoria?.ToString() },
+            { "idBarrio", Model.IdBarrio?.ToString() },
+            { "fechaDesde", Model.FechaDesde?.ToString("yyyy-MM-dd") },
+            { "fechaHasta", Model.FechaHasta?.ToString("yyyy-MM-dd") },
+            { "busqueda", Model.Busqueda }
         }
-    </tbody>
-</table>
-
-<partial name="_Paginacion" model="@(new LogeoV2.ViewModels.PaginacionParams {
-    PaginaActual = Model.PaginaActual,
-    TotalPaginas = Model.TotalPaginas,
-    AccionUrl = Url.Action("Historial", "Reclamos") ?? "",
-    ParametrosExtra = new Dictionary<string, string?> {
-        { "estado", Model.Estado },
-        { "idCategoria", Model.IdCategoria?.ToString() },
-        { "idBarrio", Model.IdBarrio?.ToString() },
-        { "fechaDesde", Model.FechaDesde?.ToString("yyyy-MM-dd") },
-        { "fechaHasta", Model.FechaHasta?.ToString("yyyy-MM-dd") },
-        { "busqueda", Model.Busqueda }
-    }
-})" />
+    })" />
+</div>
